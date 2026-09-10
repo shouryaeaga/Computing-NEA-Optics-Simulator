@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
-from Optics import *
-# from Optics.Optics import snells_law
+from Optics import snells_law
+
 
 class TestOptics(unittest.TestCase):
     def test_snells_law(self):

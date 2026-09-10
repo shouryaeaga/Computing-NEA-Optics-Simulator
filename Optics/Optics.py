@@ -1,6 +1,11 @@
 import numpy as np
 import math
 
+def reflection_vector(incident_vector, normal_vector):
+    # use the formula for reflection r = d - 2(d . n)n
+    reflected_vector = incident_vector - 2 * np.dot(incident_vector, normal_vector) * normal_vector
+    return reflected_vector
+
 # Snell's law in vector form
 def snells_law(n1, n2, incident_vector, normal_vector):
     # find the ratio between the refractive indices
@@ -10,6 +15,7 @@ def snells_law(n1, n2, incident_vector, normal_vector):
 
     # find transmitted vector using Snell's law in vector form
     transmitted_vector = math.sqrt(1-mu**2 * (1 - cos_theta_i**2)) * normal_vector + mu * incident_vector
+
     # return the vector result
     return transmitted_vector
 

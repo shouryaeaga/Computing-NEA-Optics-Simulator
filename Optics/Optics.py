@@ -1,9 +1,13 @@
 import numpy as np
 import math
 
+# requires an incident vector and a normal vector (normalised) to find the reflected vector
+# this was defined in design
 def reflection_vector(incident_vector, normal_vector):
     # use the formula for reflection r = d - 2(d . n)n
     reflected_vector = incident_vector - 2 * np.dot(incident_vector, normal_vector) * normal_vector
+    if np.linalg.norm(normal_vector) == 0:
+        raise ValueError("Normal vector cannot be zero-length.")
     return reflected_vector
 
 # Snell's law in vector form

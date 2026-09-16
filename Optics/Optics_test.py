@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from Optics import snells_law, reflection_vector
+from Optics import snells_law, reflection_vector, fresnel_reflectance
 
 
 class TestOptics(unittest.TestCase):
@@ -132,6 +132,59 @@ class TestOptics(unittest.TestCase):
             reflection_vector(
                 incident_vector, normal_vector
             )
+
+    def test_fresnel_reflectance(self):
+        # Test 1: Normal incidence (n1 -> n2, less dense to more dense)
+        # create inputs from the test plan
+        n1, n2, angle = 1.0, 1.5, 0.0
+        # use the subroutine defined in the Optics.py file to find the reflectance
+        R = fresnel_reflectance(n1, n2, angle)
+        # check the output is as expected
+        # this is defined in the test plan in the "Expected Output"
+        self.assertAlmostEqual(R, 0.04, places=5)
+ 
+        # this is then copied for all the other tests,
+        # with their corresponding inputs and outputs from the test plan
+ 
+        # Test 2: Angled incidence
+        n1, n2, angle = 1.5, 1.0, 30.0
+ 
+        R = fresnel_reflectance(n1, n2, angle)
+ 
+        # correct hand calculated value asserted
+        self.assertAlmostEqual(R, 0.0552, places=4)
+ 
+        # Test 3: Boundary / grazing incidence
+        n1, n2, angle = 1.0, 1.5, 90.0
+ 
+        R = fresnel_reflectance(n1, n2, angle)
+ 
+        # at grazing incidence (edge case)
+        self.assertAlmostEqual(R, 1.0, places=3)
+ 
+        # Test 4: Boundary / critical angle
+        n1, n2, angle = 1.5, 1.0, 50
+ 
+        R = fresnel_reflectance(n1, n2, angle)
+ 
+        self.assertAlmostEqual(R, 1.0, places=2)
+ 
+        # Test 5: Erroneous / invalid refractive index
+        n1, n2, angle = 0.0, 1.5, 30.0
+        # since this is erroneous data, we expect the subroutine to raise a
+        # value error
+        # this allows us to then handle the error appropriately in the main
+        # program, i.e. we can catch the error and display a message to the
+        # user -- this is better than having the program crash
+        with self.assertRaises(ValueError):
+            fresnel_reflectance(n1, n2, angle)
+ 
+        # Test 6: Erroneous / negative angle
+        n1, n2, angle = 1.0, 1.5, -30.0
+ 
+        with self.assertRaises(ValueError):
+            fresnel_reflectance(n1, n2, angle)
+
 
 if __name__ == '__main__':
     unittest.main()

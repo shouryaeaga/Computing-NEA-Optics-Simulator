@@ -36,4 +36,23 @@ def snells_law(n1, n2, incident_vector, normal_vector):
     # return the vector result
     return transmitted_vector
 
-
+def fresnel_reflectance(n1, n2, angle):
+    # convert the angle to radians
+    angle_rad = math.radians(angle)
+    # ensure that the refractive indices are positive
+    if n1 <= 0 or n2 <= 0 or angle < 0 or angle > 90:
+        raise ValueError("Refractive indices must be positive and angle must be between 0 and 90 degrees.")
+    # calculate the transmitted angle using Snell's law
+    sin_theta_t = (n1/n2) * math.sin(angle_rad)
+    
+    # check for total internal reflection
+    if sin_theta_t > 1:
+        return 1.0  # total internal reflection, all light is reflected
+    
+    # calculate the reflectance intensity using the Fresnel equations
+    cos_theta_t = math.sqrt(1 - sin_theta_t**2)
+    # calculate the individual reflectance for s and p polarisations as specified in the design section
+    R_s = ((n1 * math.cos(angle_rad) - n2 * cos_theta_t) / (n1 * math.cos(angle_rad) + n2 * cos_theta_t))**2
+    R_p = ((n1 * cos_theta_t - n2 * math.cos(angle_rad)) / (n1 * cos_theta_t + n2 * math.cos(angle_rad)))**2
+    R = (R_s + R_p) / 2  # average reflectance for unpolarized light
+    return R

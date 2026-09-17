@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from Optics import snells_law, reflection_vector, fresnel_reflectance
+from Optics import snells_law, reflection_vector, fresnel_reflectance, cauchy_equation
 
 
 class TestOptics(unittest.TestCase):
@@ -175,7 +175,7 @@ class TestOptics(unittest.TestCase):
         # value error
         # this allows us to then handle the error appropriately in the main
         # program, i.e. we can catch the error and display a message to the
-        # user -- this is better than having the program crash
+        # user - this is better than having the program crash
         with self.assertRaises(ValueError):
             fresnel_reflectance(n1, n2, angle)
  
@@ -185,6 +185,58 @@ class TestOptics(unittest.TestCase):
         with self.assertRaises(ValueError):
             fresnel_reflectance(n1, n2, angle)
 
+    def test_two_term_cauchy_equation(self):
+        # Test 1: Normal case
+        # create inputs from the test plan
+        A, B, wavelength = 1.5, 0.008, 0.5
+        # use the subroutine defined in the Optics.py file to find n
+        n = cauchy_equation(A, B, wavelength)
+        # check the output is as expected
+        # n = A + B/lambda^2 = 1.5 + 0.008/0.25 = 1.532
+        self.assertAlmostEqual(n, 1.532, places=5)
+ 
+        # this is then copied for all the other tests,
+        # with their corresponding inputs and outputs from the test plan
+ 
+        # Test 2: Normal case
+        A, B, wavelength = 1.3, 0.008, 0.6
+ 
+        n = cauchy_equation(A, B, wavelength)
+ 
+        # n = 1.3 + 0.008/0.36 = 1.32222...
+        self.assertAlmostEqual(n, 1.3222, places=4)
+ 
+        # Test 3: Boundary - lower visible-light limit
+        A, B, wavelength = 1.7, 0.008, 0.4
+ 
+        n = cauchy_equation(A, B, wavelength)
+ 
+        # n = 1.7 + 0.008/0.16 = 1.75
+        self.assertAlmostEqual(n, 1.75, places=5)
+ 
+        # Test 4: Boundary - upper visible-light limit
+        A, B, wavelength = 1.6, 0.008, 0.7
+ 
+        n = cauchy_equation(A, B, wavelength)
+ 
+        # n = 1.6 + 0.008/0.49 = 1.61632...
+        self.assertAlmostEqual(n, 1.6163, places=4)
+ 
+        # Test 5: Erroneous / division by zero
+        A, B, wavelength = 1.3, 0.008, 0.0
+        # since this is erroneous data, we expect the subroutine to raise a
+        # value error
+        # this allows us to then handle the error appropriately in the main
+        # program, i.e. we can catch the error and display a message to the
+        # user - this is better than having the program crash
+        with self.assertRaises(ValueError):
+            cauchy_equation(A, B, wavelength)
+ 
+        # Test 6: Erroneous / invalid (negative) wavelength
+        A, B, wavelength = 1.5, 0.008, -0.5
+ 
+        with self.assertRaises(ValueError):
+            cauchy_equation(A, B, wavelength)
 
 if __name__ == '__main__':
     unittest.main()

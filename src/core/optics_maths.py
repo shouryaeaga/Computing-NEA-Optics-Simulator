@@ -56,3 +56,13 @@ def fresnel_reflectance(n1, n2, angle):
     R_p = ((n1 * cos_theta_t - n2 * math.cos(angle_rad)) / (n1 * cos_theta_t + n2 * math.cos(angle_rad)))**2
     R = (R_s + R_p) / 2  # average reflectance for unpolarized light
     return R
+
+# this must have the wavelength in micrometers and NOT nanometres
+def cauchy_equation(A, B, wavelength):
+    # validate data
+    if A <= 0 or B <= 0 or wavelength <= 0:
+        raise ValueError("Values must be positive")
+
+    # calculate value
+    value = A + B/(wavelength**2)
+    return value

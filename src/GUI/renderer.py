@@ -73,8 +73,8 @@ class Renderer:
         # make a line for the beam light source
         pygame.draw.line(self.__screen,
                          self.__LIGHT_SOURCE_COLOUR,
-                         light_source.point_one, 
-                         light_source.point_two, width=3)
+                         light_source.__point_one, 
+                         light_source.__point_two, width=3)
 
 
     def render_light_ray(self, light_ray: Ray):

@@ -1,0 +1,35 @@
+@startuml packages_Optics
+set namespaceSeparator none
+package "src" as src {
+}
+package "src.GUI" as src.GUI {
+}
+package "src.GUI.renderer" as src.GUI.renderer {
+}
+package "src.GUI.scene" as src.GUI.scene {
+}
+package "src.core" as src.core {
+}
+package "src.core.optics_maths" as src.core.optics_maths {
+}
+package "src.core.ray" as src.core.ray {
+}
+package "src.main" as src.main {
+}
+package "src.objects" as src.objects {
+}
+package "src.objects.light_sources" as src.objects.light_sources {
+}
+package "src.objects.light_sources.Base" as src.objects.light_sources.Base {
+}
+package "src.objects.light_sources.Beam" as src.objects.light_sources.Beam {
+}
+package "src.objects.light_sources.PointSource" as src.objects.light_sources.PointSource {
+}
+package "src.objects.light_sources.SingleRay" as src.objects.light_sources.SingleRay {
+}
+src.main --> src.GUI.renderer
+src.objects.light_sources.Beam --> src.objects.light_sources.Base
+src.objects.light_sources.PointSource --> src.objects.light_sources.Base
+src.objects.light_sources.SingleRay --> src.objects.light_sources.Base
+@enduml

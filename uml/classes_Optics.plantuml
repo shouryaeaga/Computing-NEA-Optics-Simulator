@@ -1,0 +1,67 @@
+@startuml classes_Optics
+set namespaceSeparator none
+class "Beam" as src.objects.light_sources.Beam.Beam {
+  -direction : ndarray
+  -point_one : ndarray
+  -point_two : ndarray
+  -ray_spacing
+  +__init__(point_one, point_two, ray_spacing, wavelength, intensity)
+  +calculate_normal_direction()
+  +create_rays()
+}
+class "LightSource" as src.objects.light_sources.Base.LightSource {
+  -intensity : float
+  -position
+  -rays : list
+  -wavelength : int
+  -white_light : bool
+  +__init__(position, wavelength, intensity, white_light)
+  +get_emitted_rays()
+  +get_intensity()
+  +get_position()
+  +get_wavelength()
+  +get_white_light()
+}
+class "PointSource" as src.objects.light_sources.PointSource.PointSource {
+  +__init__(position, wavelength, intensity, angle_increment_degrees)
+  +update_angle_increment_degrees(angle_increment_degrees)
+}
+class "Ray" as src.core.ray.Ray {
+  +depth : int
+  +direction
+  +intensity : float
+  +start_point
+  +wavelength : int
+  +__init__(start_point, direction, wavelength, intensity, depth)
+}
+class "Renderer" as src.GUI.renderer.Renderer {
+  -LIGHT_RAY_COLOUR_TEMPORARY : tuple
+  -LIGHT_SOURCE_COLOUR : tuple
+  -LIGHT_SOURCE_RADIUS : int
+  -background_color : tuple
+  -clock
+  -scene
+  -screen
+  +__init__()
+  +render_beam_source(light_source: Beam)
+  +render_light_ray(light_ray: Ray)
+  +render_light_sources()
+  +render_point_source(light_source)
+  +render_scene()
+}
+class "Scene" as src.GUI.scene.Scene {
+  -light_sources
+  +__init__()
+  +add_light_source(light_source)
+  +get_light_sources()
+}
+class "SingleRay" as src.objects.light_sources.SingleRay.SingleRay {
+  -direction_point
+  -ray_direction
+  +__init__(position, direction_point, wavelength, intensity)
+  +update_direction(new_direction_point)
+}
+src.objects.light_sources.Beam.Beam --|> src.objects.light_sources.Base.LightSource
+src.objects.light_sources.PointSource.PointSource --|> src.objects.light_sources.Base.LightSource
+src.objects.light_sources.SingleRay.SingleRay --|> src.objects.light_sources.Base.LightSource
+@enduml

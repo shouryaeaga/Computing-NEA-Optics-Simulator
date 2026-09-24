@@ -1,3 +1,2 @@
-
-def __init__():
-    pass
+from GUI.renderer import Renderer
+renderer = Renderer()

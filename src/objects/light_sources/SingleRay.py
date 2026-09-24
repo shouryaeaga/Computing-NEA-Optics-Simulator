@@ -22,7 +22,6 @@ class SingleRay (LightSource):
         # Add the emitted ray to the rays list of the light source
         self._LightSource__rays.append(ray)
         
-    
 
     def update_direction(self, new_direction_point):
         # Update the direction point and recalculate the direction vector

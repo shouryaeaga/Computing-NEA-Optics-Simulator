@@ -1,5 +1,7 @@
 from GUI.scene import Scene
 from core.ray import Ray
+from objects.light_sources.Beam import Beam
+from objects.light_sources.SingleRay import SingleRay
 from objects.light_sources.Base import LightSource
 from objects.light_sources.PointSource import PointSource
 import pygame
@@ -16,11 +18,12 @@ class Renderer:
         # Define a background color (black in this case)
         self.__background_color = (0, 0, 0)
         self.__scene = Scene()  # Initialize a Scene object to manage light sources and rays
+        # constants to define certain colours
         self.__LIGHT_SOURCE_COLOUR = (255, 220, 70)
         self.__LIGHT_SOURCE_RADIUS = 3
         self.__LIGHT_RAY_COLOUR_TEMPORARY = (80, 220, 255)
 
-        test_light_source = PointSource((400, 400))
+        test_light_source = Beam((400, 400), (400, 450), 5)
 
         self.__scene.add_light_source(test_light_source)
 
@@ -46,11 +49,33 @@ class Renderer:
         light_sources: list[LightSource] = self.__scene.get_light_sources()
 
         for light_source in light_sources:
-            # draw a circle where position of light source is
-            pygame.draw.circle(self.__screen, self.__LIGHT_SOURCE_COLOUR, (light_source.get_position()), self.__LIGHT_SOURCE_RADIUS)
-            rays = light_source.get_emitted_rays()
-            for ray in rays:
+            # detect whether the light source is a point type source (SingleRay or PointSource) or if it is a beam source.
+            if isinstance(light_source, PointSource) or isinstance(light_source, SingleRay):
+                #Render as a point type source
+                self.render_point_source(light_source)
+            else:
+                # render as a beam type source
+                self.render_beam_source(light_source)
+
+            for ray in light_source.get_emitted_rays():
                 self.render_light_ray(ray)
+
+    def render_point_source(self, light_source):
+        # draw a circle onto the screen with the correct colours
+        pygame.draw.circle(
+            self.__screen,
+            self.__LIGHT_SOURCE_COLOUR,
+            light_source.get_position(),
+            self.__LIGHT_SOURCE_RADIUS,
+        )
+
+    def render_beam_source(self, light_source: Beam):
+        # make a line for the beam light source
+        pygame.draw.line(self.__screen,
+                         self.__LIGHT_SOURCE_COLOUR,
+                         light_source.point_one, 
+                         light_source.point_two, width=3)
+
 
     def render_light_ray(self, light_ray: Ray):
         # implementation for rendering an invidividual light ray

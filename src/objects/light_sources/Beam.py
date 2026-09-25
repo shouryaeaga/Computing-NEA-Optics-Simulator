@@ -22,14 +22,14 @@ class Beam(LightSource):
         super().__init__(point_one, wavelength, intensity)
 
         # Store the two points connected by the beam
-        self.__point_one = np.array(point_one)
-        self.__point_two = np.array(point_two)
+        self.point_one = np.array(point_one)
+        self.point_two = np.array(point_two)
 
         # Store the spacing between adjacent rays
         self.__ray_spacing = ray_spacing
 
         # Check that the two points are different
-        if np.array_equal(self.__point_one, self.__point_two):
+        if np.array_equal(self.point_one, self.point_two):
             raise ValueError("The beam points must be different.")
 
         # Check that the ray spacing is positive
@@ -44,7 +44,7 @@ class Beam(LightSource):
 
     def calculate_normal_direction(self):
         # Calculate the vector joining the two beam points
-        connecting_vector = self.__point_two - self.__point_one
+        connecting_vector = self.point_two - self.point_one
 
         # Create a perpendicular vector
         return np.array(
@@ -56,7 +56,7 @@ class Beam(LightSource):
 
     def create_rays(self):
         # Calculate the vector joining the two beam points
-        connecting_vector = self.__point_two - self.__point_one
+        connecting_vector = self.point_two - self.point_one
 
         # Calculate the length of the beam
         beam_length = np.linalg.norm(connecting_vector)
@@ -71,7 +71,7 @@ class Beam(LightSource):
         for ray_index in range(ray_count):
             # Calculate the ray's starting position
             ray_position = (
-                self.__point_one
+                self.point_one
                 + unit_vector * ray_index * self.__ray_spacing
             )
 

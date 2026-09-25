@@ -23,7 +23,7 @@ class Renderer:
         self.__LIGHT_SOURCE_RADIUS = 3
         self.__LIGHT_RAY_COLOUR_TEMPORARY = (80, 220, 255)
 
-        test_light_source = Beam((400, 400), (400, 450), 5)
+        test_light_source = SingleRay((400, 400), (450, 670))
 
         self.__scene.add_light_source(test_light_source)
 
@@ -73,8 +73,8 @@ class Renderer:
         # make a line for the beam light source
         pygame.draw.line(self.__screen,
                          self.__LIGHT_SOURCE_COLOUR,
-                         light_source.__point_one, 
-                         light_source.__point_two, width=3)
+                         light_source.point_one, 
+                         light_source.point_two, width=3)
 
 
     def render_light_ray(self, light_ray: Ray):

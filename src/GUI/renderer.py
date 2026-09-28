@@ -23,7 +23,14 @@ class Renderer:
         self.__LIGHT_SOURCE_RADIUS = 3
         self.__LIGHT_RAY_COLOUR_TEMPORARY = (80, 220, 255)
 
+        # single ray
         test_light_source = SingleRay((400, 400), (450, 670))
+
+        # point source
+        #test_light_source = PointSource((400, 400))
+
+        #beam
+        #test_light_source = Beam((400, 400), (400, 500), 5)
 
         self.__scene.add_light_source(test_light_source)
 
@@ -81,5 +88,6 @@ class Renderer:
         # implementation for rendering an invidividual light ray
         # create a pygame line
         LAMBDA_END = 1000 # temporary value for drawing infinite lines without any objects
-        pygame.draw.line(self.__screen, self.__LIGHT_RAY_COLOUR_TEMPORARY, light_ray.start_point, light_ray.start_point + LAMBDA_END*light_ray.direction)
+        pygame.draw.line(self.__screen, self.__LIGHT_RAY_COLOUR_TEMPORARY, light_ray.start_point, light_ray.start_point + LAMBDA_END*light_ray.direction,
+                         width=3)
         

@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from Optics import snells_law, reflection_vector, fresnel_reflectance, cauchy_equation
+from src.core.optics_maths import snells_law, reflection_vector, fresnel_reflectance, cauchy_equation
 
 
 class TestOptics(unittest.TestCase):

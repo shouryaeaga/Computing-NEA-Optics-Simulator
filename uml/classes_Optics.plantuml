@@ -1,13 +1,14 @@
 @startuml classes_Optics
+skinparam classAttributeIconSize 0
 set namespaceSeparator none
 class "Beam" as src.objects.light_sources.Beam.Beam {
   -direction : ndarray
   -point_one : ndarray
   -point_two : ndarray
   -ray_spacing
+  -calculate_normal_direction()
+  -create_rays()
   +__init__(point_one, point_two, ray_spacing, wavelength, intensity)
-  +calculate_normal_direction()
-  +create_rays()
 }
 class "LightSource" as src.objects.light_sources.Base.LightSource {
   -intensity : float
@@ -23,6 +24,7 @@ class "LightSource" as src.objects.light_sources.Base.LightSource {
   +get_white_light()
 }
 class "PointSource" as src.objects.light_sources.PointSource.PointSource {
+  -RAY_ANGLE_INCREMENT_DEGREES : int
   +__init__(position, wavelength, intensity, angle_increment_degrees)
   +update_angle_increment_degrees(angle_increment_degrees)
 }
@@ -43,11 +45,11 @@ class "Renderer" as src.GUI.renderer.Renderer {
   -scene
   -screen
   +__init__()
-  +render_beam_source(light_source: Beam)
-  +render_light_ray(light_ray: Ray)
-  +render_light_sources()
-  +render_point_source(light_source)
-  +render_scene()
+  -render_beam_source(light_source: Beam)
+  -render_light_ray(light_ray: Ray)
+  -render_light_sources()
+  -render_point_source(light_source)
+  -render_scene()
 }
 class "Scene" as src.GUI.scene.Scene {
   -light_sources
@@ -64,4 +66,12 @@ class "SingleRay" as src.objects.light_sources.SingleRay.SingleRay {
 src.objects.light_sources.Beam.Beam --|> src.objects.light_sources.Base.LightSource
 src.objects.light_sources.PointSource.PointSource --|> src.objects.light_sources.Base.LightSource
 src.objects.light_sources.SingleRay.SingleRay --|> src.objects.light_sources.Base.LightSource
+' Light sources own their Rays
+src.objects.light_sources.Base.LightSource "1" *-- "0..*" src.core.ray.Ray
+
+' Renderer owns the Scene
+src.GUI.renderer.Renderer *--> src.GUI.scene.Scene
+
+' Scene is directed-associated with the light sources
+src.GUI.scene.Scene "0..*" --> src.objects.light_sources.Base.LightSource
 @enduml

@@ -6,8 +6,7 @@ from core.ray import Ray
 
 from .Base import LightSource
 
-# how spaced apart should the rays be
-RAY_ANGLE_INCREMENT_DEGREES = 10.0
+BASE_RAY_ANGLE_INCREMENT_DEGREES = 10
 
 
 class PointSource(LightSource):
@@ -16,10 +15,11 @@ class PointSource(LightSource):
         position,
         wavelength=550,
         intensity=1.0,
-        angle_increment_degrees=RAY_ANGLE_INCREMENT_DEGREES,
+        angle_increment_degrees=BASE_RAY_ANGLE_INCREMENT_DEGREES,
     ):
         super().__init__(position, wavelength, intensity)
-        self.update_angle_increment_degrees(angle_increment_degrees)
+        self.__RAY_ANGLE_INCREMENT_DEGREES = angle_increment_degrees
+        self.update_angle_increment_degrees(self.__RAY_ANGLE_INCREMENT_DEGREES)
 
     def update_angle_increment_degrees(self, angle_increment_degrees):
         if not 0 < angle_increment_degrees <= 360:

@@ -37,12 +37,12 @@ class Beam(LightSource):
             raise ValueError("ray_spacing must be greater than zero.")
 
         # Calculate the direction normal to the beam
-        self.__direction = self.calculate_normal_direction()
+        self.__direction = self.__calculate_normal_direction()
 
         # Create the rays emitted by the beam
-        self.create_rays()
+        self.__create_rays()
 
-    def calculate_normal_direction(self):
+    def __calculate_normal_direction(self):
         # Calculate the vector joining the two beam points
         connecting_vector = self.__point_two - self.__point_one
 
@@ -54,7 +54,7 @@ class Beam(LightSource):
             ]
         )
 
-    def create_rays(self):
+    def __create_rays(self):
         # Calculate the vector joining the two beam points
         connecting_vector = self.__point_two - self.__point_one
 

@@ -1,6 +1,5 @@
 import re
 import subprocess
-import sys
 from pathlib import Path
 
 
@@ -35,19 +34,13 @@ subprocess.run(
 uml_file = UML_DIR / "classes_Optics.plantuml"
 
 if not uml_file.exists():
-    raise FileNotFoundError(
-        f"Could not find generated UML file: {uml_file}"
-    )
+    raise FileNotFoundError(f"Could not find generated UML file: {uml_file}")
 
 
 # ---------------------------------------------------------
 # 3. Convert Python naming conventions to UML visibility
-#
-#    __foo       -> -foo   private
-#    _foo        -> #foo   protected
-#    foo         -> +foo   public
-#
-#    __init__    -> +__init__()  public constructor
+#    __foo -> -foo (private), _foo -> #foo (protected),
+#    foo -> +foo (public), __init__ -> +__init__ (public)
 # ---------------------------------------------------------
 
 lines = uml_file.read_text(encoding="utf-8").splitlines()
@@ -55,12 +48,16 @@ lines = uml_file.read_text(encoding="utf-8").splitlines()
 inside_class = False
 output = []
 
-
 for line in lines:
-
     stripped = line.strip()
 
-    # Detect beginning/end of a class
+    # Turn off PlantUML's coloured visibility icons so the
+    # +, -, # characters are shown as text instead
+    if stripped.startswith("@startuml"):
+        output.append(line)
+        output.append("skinparam classAttributeIconSize 0")
+        continue
+
     if stripped.startswith("class ") and stripped.endswith("{"):
         inside_class = True
         output.append(line)
@@ -71,32 +68,23 @@ for line in lines:
         output.append(line)
         continue
 
-    # Only modify members inside classes
     if inside_class and stripped:
-
-        indentation = line[:len(line) - len(line.lstrip())]
+        indentation = line[: len(line) - len(line.lstrip())]
         member = stripped
 
-        # Don't touch relationships or other PlantUML commands
         if not member.startswith(("+", "-", "#", "~")):
+            name = member.split("(", 1)[0].split(" ", 1)[0]
 
-            # Python magic methods such as __init__
-            if re.match(r"^__.*__$", member.split("(", 1)[0]):
+            if re.match(r"^__.*__$", name):
                 member = "+" + member
-
-            # Private: __name
             elif member.startswith("__"):
                 member = "-" + member[2:]
-
-            # Protected: _name
             elif member.startswith("_"):
                 member = "#" + member[1:]
-
-            # Public
             else:
                 member = "+" + member
 
-            line = indentation + member
+        line = indentation + member
 
     output.append(line)
 
@@ -105,9 +93,20 @@ for line in lines:
 # 4. Write the modified UML
 # ---------------------------------------------------------
 
-uml_file.write_text(
-    "\n".join(output) + "\n",
-    encoding="utf-8",
-)
+extra_lines = """
+' Light sources own their Rays
+src.objects.light_sources.Base.LightSource "1" *-- "0..*" src.core.ray.Ray
+
+' Renderer owns the Scene
+src.GUI.renderer.Renderer *--> src.GUI.scene.Scene
+
+' Scene is directed-associated with the light sources
+src.GUI.scene.Scene "0..*" --> src.objects.light_sources.Base.LightSource
+""".strip().splitlines()
+
+end = max(i for i, l in enumerate(output) if l.strip().startswith("@enduml"))
+output[end:end] = extra_lines
+
+uml_file.write_text("\n".join(output) + "\n", encoding="utf-8")
 
 print(f"UML generated successfully: {uml_file}")

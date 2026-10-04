@@ -1,6 +1,6 @@
 class LightSource:
     # defines the shared behaviour for all light sources
-    def __init__(self, position, wavelength=550, intensity=1.0, white_light=False):
+    def __init__(self, position: tuple[float, float], wavelength: float = 550.0, intensity: float = 1.0, white_light: bool = False):
         # each light source requires a 2D position vector 
         self.__position = position
         # wavelength is required in nanometres

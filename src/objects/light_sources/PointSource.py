@@ -12,10 +12,10 @@ BASE_RAY_ANGLE_INCREMENT_DEGREES = 10
 class PointSource(LightSource):
     def __init__(
         self,
-        position,
-        wavelength=550,
-        intensity=1.0,
-        angle_increment_degrees=BASE_RAY_ANGLE_INCREMENT_DEGREES,
+        position: tuple[float, float],
+        wavelength: float = 550.0,
+        intensity: float = 1.0,
+        angle_increment_degrees: float = BASE_RAY_ANGLE_INCREMENT_DEGREES,
     ):
         super().__init__(position, wavelength, intensity)
         self.__RAY_ANGLE_INCREMENT_DEGREES = angle_increment_degrees

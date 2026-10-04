@@ -15,22 +15,22 @@ class Renderer:
         # Set the title of the window
         pygame.display.set_caption("Optics Simulator")
         self.__clock = pygame.time.Clock()
-        # Define a background color (black in this case)
-        self.__background_color = (0, 0, 0)
+        # Define a background color (very dark gray in this case)
+        self.__background_color = (34, 34, 34)
         self.__scene = Scene()  # Initialize a Scene object to manage light sources and rays
         # constants to define certain colours
         self.__LIGHT_SOURCE_COLOUR = (255, 220, 70)
         self.__LIGHT_SOURCE_RADIUS = 3
-        self.__LIGHT_RAY_COLOUR_TEMPORARY = (80, 220, 255)
+        self.__LIGHT_RAY_COLOUR = (255, 245, 182)
 
         # single ray
-        test_light_source = SingleRay((400, 400), (450, 670))
+        test_light_source = SingleRay((50, 50), (100, 100))
 
         # point source
-        #test_light_source = PointSource((400, 400))
+        # test_light_source = PointSource((400, 300))
 
         #beam
-        #test_light_source = Beam((400, 400), (400, 500), 5)
+        #test_light_source = Beam((300, 350), (350, 400), 5)
 
         self.__scene.add_light_source(test_light_source)
 
@@ -78,16 +78,17 @@ class Renderer:
 
     def __render_beam_source(self, light_source: Beam):
         # make a line for the beam light source
+        point_one, point_two = light_source.get_endpoints()
         pygame.draw.line(self.__screen,
                          self.__LIGHT_SOURCE_COLOUR,
-                         light_source.point_one, 
-                         light_source.point_two, width=3)
+                         point_one,
+                         point_two, width=3)
 
 
     def __render_light_ray(self, light_ray: Ray):
         # implementation for rendering an invidividual light ray
         # create a pygame line
         LAMBDA_END = 1000 # temporary value for drawing infinite lines without any objects
-        pygame.draw.line(self.__screen, self.__LIGHT_RAY_COLOUR_TEMPORARY, light_ray.start_point, light_ray.start_point + LAMBDA_END*light_ray.direction,
+        pygame.draw.line(self.__screen, self.__LIGHT_RAY_COLOUR, light_ray.start_point, light_ray.start_point + LAMBDA_END*light_ray.direction,
                          width=3)
         

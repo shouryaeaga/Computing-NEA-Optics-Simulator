@@ -4,7 +4,7 @@ from .Base import LightSource
 import numpy as np
 
 class SingleRay (LightSource):
-    def __init__(self, position, direction_point, wavelength=550, intensity=1.0):
+    def __init__(self, position: tuple[float, float], direction_point: tuple[float, float], wavelength: float = 550.0, intensity: float = 1.0):
         super().__init__(position, wavelength, intensity)
         
         self.__direction_point = direction_point

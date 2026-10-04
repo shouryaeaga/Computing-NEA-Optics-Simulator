@@ -71,6 +71,7 @@ for line in lines:
     if inside_class and stripped:
         indentation = line[: len(line) - len(line.lstrip())]
         member = stripped
+        member = re.sub(r"\[.*?\]", "", member)
 
         if not member.startswith(("+", "-", "#", "~")):
             name = member.split("(", 1)[0].split(" ", 1)[0]

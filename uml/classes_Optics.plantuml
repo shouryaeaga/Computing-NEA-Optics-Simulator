@@ -2,21 +2,21 @@
 skinparam classAttributeIconSize 0
 set namespaceSeparator none
 class "Beam" as src.objects.light_sources.Beam.Beam {
-  -direction : ndarray
-  -point_one : ndarray
-  -point_two : ndarray
-  -ray_spacing
+  -direction : tuple
+  -point_one : tuple
+  -point_two : tuple
+  -ray_spacing : float
   -calculate_normal_direction()
   -create_rays()
-  +__init__(point_one, point_two, ray_spacing, wavelength, intensity)
+  +__init__(point_one: tuple, point_two: tuple, ray_spacing: float, wavelength: float, intensity: float)
 }
 class "LightSource" as src.objects.light_sources.Base.LightSource {
   -intensity : float
-  -position
+  -position : tuple
   -rays : list
-  -wavelength : int
+  -wavelength : float
   -white_light : bool
-  +__init__(position, wavelength, intensity, white_light)
+  +__init__(position: tuple, wavelength: float, intensity: float, white_light: bool)
   +get_emitted_rays()
   +get_intensity()
   +get_position()
@@ -24,8 +24,8 @@ class "LightSource" as src.objects.light_sources.Base.LightSource {
   +get_white_light()
 }
 class "PointSource" as src.objects.light_sources.PointSource.PointSource {
-  -RAY_ANGLE_INCREMENT_DEGREES : int
-  +__init__(position, wavelength, intensity, angle_increment_degrees)
+  -RAY_ANGLE_INCREMENT_DEGREES : float
+  +__init__(position: tuple, wavelength: float, intensity: float, angle_increment_degrees: float)
   +update_angle_increment_degrees(angle_increment_degrees)
 }
 class "Ray" as src.core.ray.Ray {
@@ -37,7 +37,7 @@ class "Ray" as src.core.ray.Ray {
   +__init__(start_point, direction, wavelength, intensity, depth)
 }
 class "Renderer" as src.GUI.renderer.Renderer {
-  -LIGHT_RAY_COLOUR_TEMPORARY : tuple
+  -LIGHT_RAY_COLOUR : tuple
   -LIGHT_SOURCE_COLOUR : tuple
   -LIGHT_SOURCE_RADIUS : int
   -background_color : tuple
@@ -52,15 +52,15 @@ class "Renderer" as src.GUI.renderer.Renderer {
   -render_scene()
 }
 class "Scene" as src.GUI.scene.Scene {
-  -light_sources
+  -light_sources : list
   +__init__()
-  +add_light_source(light_source)
+  +add_light_source(light_source: LightSource)
   +get_light_sources()
 }
 class "SingleRay" as src.objects.light_sources.SingleRay.SingleRay {
-  -direction_point
-  -ray_direction
-  +__init__(position, direction_point, wavelength, intensity)
+  -direction_point : tuple
+  -ray_direction : tuple
+  +__init__(position: tuple, direction_point: tuple, wavelength: float, intensity: float)
   +update_direction(new_direction_point)
 }
 src.objects.light_sources.Beam.Beam --|> src.objects.light_sources.Base.LightSource

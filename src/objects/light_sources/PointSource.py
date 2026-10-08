@@ -16,9 +16,15 @@ class PointSource(LightSource):
         wavelength: float = 550.0,
         intensity: float = 1.0,
         angle_increment_degrees: float = BASE_RAY_ANGLE_INCREMENT_DEGREES,
+        point_source_radius = 3.0
     ):
         super().__init__(position, wavelength, intensity)
         self.__RAY_ANGLE_INCREMENT_DEGREES = angle_increment_degrees
+        # introduce a new point source radius so light rays can be emitted from surface.
+        self.point_source_radius = point_source_radius
+        self.update_angle_increment_degrees(self.__RAY_ANGLE_INCREMENT_DEGREES)
+
+    def update_rays(self):
         self.update_angle_increment_degrees(self.__RAY_ANGLE_INCREMENT_DEGREES)
 
     def update_angle_increment_degrees(self, angle_increment_degrees):
@@ -32,12 +38,18 @@ class PointSource(LightSource):
             angle = math.radians(ray_index * angle_increment_degrees)
             # calculate the direction vector
             direction = np.array([math.cos(angle), math.sin(angle)])
+            # calculate position of where light rays should start
+            position = np.array(self._LightSource__position) + direction * self.point_source_radius
             # create a new instance of a ray object
             self._LightSource__rays.append(
                 Ray(
-                self._LightSource__position,
+                position,
                 direction,
                 self._LightSource__wavelength,
                 self._LightSource__intensity,
+                )
             )
-        )
+    
+def get_selectable_points(self):
+    # Return a list of points that can be selected for this light source
+    return [self._LightSource__position]

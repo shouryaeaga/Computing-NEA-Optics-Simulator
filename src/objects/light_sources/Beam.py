@@ -45,6 +45,22 @@ class Beam(LightSource):
     def get_endpoints(self):
         return self.__point_one, self.__point_two
 
+    def update_points(self, new_point_one: tuple[float, float], new_point_two: tuple[float, float]):
+        # Update the beam points
+        self.__point_one = new_point_one
+        self.__point_two = new_point_two
+
+        # Check that the two points are different
+        if np.array_equal(self.__point_one, self.__point_two):
+            raise ValueError("The beam points must be different.")
+
+        # Recalculate the direction normal to the beam
+        self.__direction = self.__calculate_normal_direction()
+
+        # Clear existing rays and create new ones based on the updated points
+        self._LightSource__rays.clear()
+        self.__create_rays()
+
     def __calculate_normal_direction(self):
         # Calculate the vector joining the two beam points
         connecting_vector = np.subtract(self.__point_two, self.__point_one)
@@ -84,3 +100,7 @@ class Beam(LightSource):
 
             # Add the ray to the inherited light source ray list
             self._LightSource__rays.append(ray)
+
+    def get_selectable_points(self):
+        # Return a list of points that can be selected for this light source
+        return [self.__point_one, self.__point_two]

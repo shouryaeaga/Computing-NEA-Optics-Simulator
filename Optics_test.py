@@ -1,9 +1,16 @@
 import unittest
+
+from src.objects.light_sources.SingleRay import SingleRay
 import numpy as np
 from src.core.optics_maths import snells_law, reflection_vector, fresnel_reflectance, cauchy_equation
 
 
 class TestOptics(unittest.TestCase):
+    def test_single_ray_selectable_points(self):
+        source = SingleRay((50, 50), (100, 100))
+
+        self.assertEqual(source.get_selectable_points(), [(50, 50), (100, 100)])
+
     def test_snells_law(self):
         # Test 1: Normal refraction
         # set up the refractive indices

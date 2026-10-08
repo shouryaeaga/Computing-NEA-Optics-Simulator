@@ -11,6 +11,7 @@ class LightSource:
         self.__white_light = white_light
 
         self.__rays = []  # Initialize the rays list to store emitted rays
+        self.being_selected = False
 
     def get_emitted_rays(self):
         # Return the list of emitted rays
@@ -28,3 +29,14 @@ class LightSource:
 
     def get_white_light(self):
         return self.__white_light
+
+    def get_selectable_points(self):
+        # Return a list of points that can be selected for this light source
+        return [self.__position]
+
+    def update_position(self, new_position: tuple[float, float]):
+        # Update the position of the light source
+        self.__position = new_position
+        # Update the position of all emitted rays based on the new position
+        for ray in self.__rays:
+            ray.position = new_position

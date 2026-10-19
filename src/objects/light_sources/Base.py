@@ -39,4 +39,4 @@ class LightSource:
         self.__position = new_position
         # Update the position of all emitted rays based on the new position
         for ray in self.__rays:
-            ray.position = new_position
+            ray.start_point = new_position

@@ -49,7 +49,11 @@ class PointSource(LightSource):
                 self._LightSource__intensity,
                 )
             )
-    
-def get_selectable_points(self):
-    # Return a list of points that can be selected for this light source
-    return [self._LightSource__position]
+    def get_selectable_points(self):
+        # Return a list of points that can be selected for this light source
+        return [self.get_position()]
+
+    def update_position(self, new_position: tuple[float, float]):
+        super().update_position(new_position)
+        self._LightSource__rays.clear()
+        self.update_rays()

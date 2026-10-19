@@ -46,7 +46,7 @@ class SingleRay (LightSource):
         # Update the existing ray's position and direction
         # Update the existing ray's direction
         if self._LightSource__rays:
-            self._LightSource__rays[0].position = position
+            self._LightSource__rays[0].start_point = position
             self._LightSource__rays[0].direction = self.__ray_direction
 
     def get_selectable_points(self):

@@ -7,3 +7,4 @@ class Polygon:
         self.vertices = vertices
         self.position = position
         self.refractive_index = refractive_index
+        self.being_selected = False  # Indicates whether the polygon is currently being selected or hovered over

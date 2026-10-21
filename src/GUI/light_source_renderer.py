@@ -14,8 +14,18 @@ class LightSourceRenderer:
     UNSELECTED_SQUARE_COLOUR = (255, 0, 0)
     SQUARE_POINT_SIZE = 5
 
-    def __init__(self, screen: pygame.Surface):
-        self.screen = screen
+    def __init__(self, screen: pygame.Surface, transparent_surface: pygame.Surface, super_sampling_factor: int = 4):
+        if super_sampling_factor <= 0:
+            raise ValueError("super_sampling_factor must be greater than zero.")
+
+        self.__screen = screen
+        self.__transparent_surface = transparent_surface
+        self.__super_sampling_factor = super_sampling_factor
+
+    def clear_rays(self):
+        # Keep the RGB colour in transparent pixels so smoothscale does not
+        # introduce dark fringes when it interpolates the ray edges.
+        self.__transparent_surface.fill(self.LIGHT_RAY_COLOUR + (0,))
 
     def render(self, light_sources: list[LightSource]):
         for light_source in light_sources:
@@ -30,17 +40,18 @@ class LightSourceRenderer:
     def render_ray(self, ray: Ray):
         line_length = 1000
         end_point = ray.start_point + line_length * ray.direction
-        pygame.draw.aaline(
-            self.screen,
-            self.LIGHT_RAY_COLOUR,
-            ray.start_point,
-            end_point,
+        pygame.draw.line(
+            self.__transparent_surface,
+            self.LIGHT_RAY_COLOUR + (int(255*ray.intensity),),
+            tuple(point * self.__super_sampling_factor for point in ray.start_point),
+            tuple(point * self.__super_sampling_factor for point in end_point),
+            int(self.__super_sampling_factor * 1.5)
         )
 
     def render_source(self, light_source: LightSource):
         if isinstance(light_source, PointSource):
             pygame.draw.circle(
-                self.screen,
+                self.__screen,
                 self.LIGHT_SOURCE_COLOUR,
                 light_source.get_position(),
                 light_source.point_source_radius,
@@ -48,7 +59,7 @@ class LightSourceRenderer:
         elif isinstance(light_source, Beam):
             point_one, point_two = light_source.get_endpoints()
             pygame.draw.aaline(
-                self.screen,
+                self.__screen,
                 self.LIGHT_SOURCE_COLOUR,
                 point_one,
                 point_two,
@@ -76,7 +87,7 @@ class LightSourceRenderer:
     def render_point_square(self, position, colour):
         half_size = self.SQUARE_POINT_SIZE // 2
         pygame.draw.rect(
-            self.screen,
+            self.__screen,
             colour,
             (
                 position[0] - half_size,

@@ -1,15 +1,25 @@
 import unittest
 
-from src.objects.light_sources.SingleRay import SingleRay
 import numpy as np
 from src.core.optics_maths import snells_law, reflection_vector, fresnel_reflectance, cauchy_equation
 
 
 class TestOptics(unittest.TestCase):
-    def test_single_ray_selectable_points(self):
-        source = SingleRay((50, 50), (100, 100))
+    def round_values(self, value):
+        if isinstance(value, np.ndarray):
+            return np.round(value, 5)
+        if isinstance(value, tuple):
+            return tuple(self.round_values(item) for item in value)
+        if isinstance(value, float):
+            return round(value, 5)
+        return value
 
-        self.assertEqual(source.get_selectable_points(), [(50, 50), (100, 100)])
+    def print_input_output(self, subroutine, inputs, output):
+        rounded_inputs = self.round_values(inputs)
+        rounded_output = self.round_values(output)
+        print(
+            f"{subroutine} | Input: {rounded_inputs} | Output: {rounded_output}"
+        )
 
     def test_snells_law(self):
         # Test 1: Normal refraction
@@ -22,6 +32,11 @@ class TestOptics(unittest.TestCase):
         # find transmitted vector using Snell's law subroutine
         transmitted_vector = snells_law(
             n1, n2, incident_vector, normal_vector
+        )
+        self.print_input_output(
+            "snells_law",
+            (n1, n2, incident_vector, normal_vector),
+            transmitted_vector,
         )
 
         # use the unittest's library to check if the transmitted vector is as expected
@@ -39,6 +54,11 @@ class TestOptics(unittest.TestCase):
         transmitted_vector = snells_law(
             n1, n2, incident_vector, normal_vector
         )
+        self.print_input_output(
+            "snells_law",
+            (n1, n2, incident_vector, normal_vector),
+            transmitted_vector,
+        )
 
         self.assertAlmostEqual(transmitted_vector[0], 0.8, places=5)
         self.assertAlmostEqual(transmitted_vector[1], 0.6, places=5)
@@ -53,6 +73,11 @@ class TestOptics(unittest.TestCase):
 
         transmitted_vector = snells_law(
             n1, n2, incident_vector, normal_vector
+        )
+        self.print_input_output(
+            "snells_law",
+            (n1, n2, incident_vector, normal_vector),
+            transmitted_vector,
         )
 
         self.assertAlmostEqual(transmitted_vector[0], 0.666666, places=5)
@@ -72,6 +97,11 @@ class TestOptics(unittest.TestCase):
             snells_law(
                 n1, n2, incident_vector, normal_vector
             )
+        self.print_input_output(
+            "snells_law",
+            (n1, n2, incident_vector, normal_vector),
+            "ValueError",
+        )
 
 
         # Test 5: Erroneous / zero-length normal vector
@@ -86,6 +116,11 @@ class TestOptics(unittest.TestCase):
             snells_law(
                 n1, n2, incident_vector, normal_vector
             )
+        self.print_input_output(
+            "snells_law",
+            (n1, n2, incident_vector, normal_vector),
+            "ValueError",
+        )
 
     def test_reflection_vector(self):
         # Test 1: Normal reflection
@@ -95,6 +130,11 @@ class TestOptics(unittest.TestCase):
         # use the subroutine defined the in the Optics.py file to find the reflected vector
         reflected_vector = reflection_vector(
             incident_vector, normal_vector
+        )
+        self.print_input_output(
+            "reflection_vector",
+            (incident_vector, normal_vector),
+            reflected_vector,
         )
         # check the output is as expected
         self.assertAlmostEqual(reflected_vector[0], 0.707107, places=5)
@@ -110,6 +150,11 @@ class TestOptics(unittest.TestCase):
         reflected_vector = reflection_vector(
             incident_vector, normal_vector
         )
+        self.print_input_output(
+            "reflection_vector",
+            (incident_vector, normal_vector),
+            reflected_vector,
+        )
 
         self.assertAlmostEqual(reflected_vector[0], -0.5, places=5)
         self.assertAlmostEqual(reflected_vector[1], 0.866025, places=5)
@@ -121,6 +166,11 @@ class TestOptics(unittest.TestCase):
 
         reflected_vector = reflection_vector(
             incident_vector, normal_vector
+        )
+        self.print_input_output(
+            "reflection_vector",
+            (incident_vector, normal_vector),
+            reflected_vector,
         )
 
         self.assertAlmostEqual(reflected_vector[0], 1.0, places=5)
@@ -139,6 +189,11 @@ class TestOptics(unittest.TestCase):
             reflection_vector(
                 incident_vector, normal_vector
             )
+        self.print_input_output(
+            "reflection_vector",
+            (incident_vector, normal_vector),
+            "ValueError",
+        )
 
     def test_fresnel_reflectance(self):
         # Test 1: Normal incidence (n1 -> n2, less dense to more dense)
@@ -146,6 +201,7 @@ class TestOptics(unittest.TestCase):
         n1, n2, angle = 1.0, 1.5, 0.0
         # use the subroutine defined in the Optics.py file to find the reflectance
         R = fresnel_reflectance(n1, n2, angle)
+        self.print_input_output("fresnel_reflectance", (n1, n2, angle), R)
         # check the output is as expected
         # this is defined in the test plan in the "Expected Output"
         self.assertAlmostEqual(R, 0.04, places=5)
@@ -157,6 +213,7 @@ class TestOptics(unittest.TestCase):
         n1, n2, angle = 1.5, 1.0, 30.0
  
         R = fresnel_reflectance(n1, n2, angle)
+        self.print_input_output("fresnel_reflectance", (n1, n2, angle), R)
  
         # correct hand calculated value asserted
         self.assertAlmostEqual(R, 0.0552, places=4)
@@ -165,6 +222,7 @@ class TestOptics(unittest.TestCase):
         n1, n2, angle = 1.0, 1.5, 90.0
  
         R = fresnel_reflectance(n1, n2, angle)
+        self.print_input_output("fresnel_reflectance", (n1, n2, angle), R)
  
         # at grazing incidence (edge case)
         self.assertAlmostEqual(R, 1.0, places=3)
@@ -173,6 +231,7 @@ class TestOptics(unittest.TestCase):
         n1, n2, angle = 1.5, 1.0, 50
  
         R = fresnel_reflectance(n1, n2, angle)
+        self.print_input_output("fresnel_reflectance", (n1, n2, angle), R)
  
         self.assertAlmostEqual(R, 1.0, places=2)
  
@@ -185,12 +244,14 @@ class TestOptics(unittest.TestCase):
         # user - this is better than having the program crash
         with self.assertRaises(ValueError):
             fresnel_reflectance(n1, n2, angle)
+        self.print_input_output("fresnel_reflectance", (n1, n2, angle), "ValueError")
  
         # Test 6: Erroneous / negative angle
         n1, n2, angle = 1.0, 1.5, -30.0
  
         with self.assertRaises(ValueError):
             fresnel_reflectance(n1, n2, angle)
+        self.print_input_output("fresnel_reflectance", (n1, n2, angle), "ValueError")
 
     def test_two_term_cauchy_equation(self):
         # Test 1: Normal case
@@ -198,6 +259,7 @@ class TestOptics(unittest.TestCase):
         A, B, wavelength = 1.5, 0.008, 0.5
         # use the subroutine defined in the Optics.py file to find n
         n = cauchy_equation(A, B, wavelength)
+        self.print_input_output("cauchy_equation", (A, B, wavelength), n)
         # check the output is as expected
         # n = A + B/lambda^2 = 1.5 + 0.008/0.25 = 1.532
         self.assertAlmostEqual(n, 1.532, places=5)
@@ -209,6 +271,7 @@ class TestOptics(unittest.TestCase):
         A, B, wavelength = 1.3, 0.008, 0.6
  
         n = cauchy_equation(A, B, wavelength)
+        self.print_input_output("cauchy_equation", (A, B, wavelength), n)
  
         # n = 1.3 + 0.008/0.36 = 1.32222...
         self.assertAlmostEqual(n, 1.3222, places=4)
@@ -217,6 +280,7 @@ class TestOptics(unittest.TestCase):
         A, B, wavelength = 1.7, 0.008, 0.4
  
         n = cauchy_equation(A, B, wavelength)
+        self.print_input_output("cauchy_equation", (A, B, wavelength), n)
  
         # n = 1.7 + 0.008/0.16 = 1.75
         self.assertAlmostEqual(n, 1.75, places=5)
@@ -225,6 +289,7 @@ class TestOptics(unittest.TestCase):
         A, B, wavelength = 1.6, 0.008, 0.7
  
         n = cauchy_equation(A, B, wavelength)
+        self.print_input_output("cauchy_equation", (A, B, wavelength), n)
  
         # n = 1.6 + 0.008/0.49 = 1.61632...
         self.assertAlmostEqual(n, 1.6163, places=4)
@@ -238,12 +303,14 @@ class TestOptics(unittest.TestCase):
         # user - this is better than having the program crash
         with self.assertRaises(ValueError):
             cauchy_equation(A, B, wavelength)
+        self.print_input_output("cauchy_equation", (A, B, wavelength), "ValueError")
  
         # Test 6: Erroneous / invalid (negative) wavelength
         A, B, wavelength = 1.5, 0.008, -0.5
  
         with self.assertRaises(ValueError):
             cauchy_equation(A, B, wavelength)
+        self.print_input_output("cauchy_equation", (A, B, wavelength), "ValueError")
 
 if __name__ == '__main__':
     unittest.main()

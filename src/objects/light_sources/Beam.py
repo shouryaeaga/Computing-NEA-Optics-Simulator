@@ -28,6 +28,8 @@ class Beam(LightSource):
         # Store the spacing between adjacent rays
         self.__ray_spacing = ray_spacing
 
+        
+
         # Check that the two points are different
         if np.array_equal(self.__point_one, self.__point_two):
             raise ValueError("The beam points must be different.")

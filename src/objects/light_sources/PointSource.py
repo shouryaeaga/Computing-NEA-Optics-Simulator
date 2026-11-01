@@ -21,13 +21,13 @@ class PointSource(LightSource):
         super().__init__(position, wavelength, intensity)
         self.__RAY_ANGLE_INCREMENT_DEGREES = angle_increment_degrees
         # introduce a new point source radius so light rays can be emitted from surface.
-        self.point_source_radius = point_source_radius
-        self.update_angle_increment_degrees(self.__RAY_ANGLE_INCREMENT_DEGREES)
+        self.__point_source_radius = point_source_radius
+        self.__update_angle_increment_degrees(self.__RAY_ANGLE_INCREMENT_DEGREES)
 
-    def update_rays(self):
-        self.update_angle_increment_degrees(self.__RAY_ANGLE_INCREMENT_DEGREES)
+    def __update_rays(self):
+        self.__update_angle_increment_degrees(self.__RAY_ANGLE_INCREMENT_DEGREES)
 
-    def update_angle_increment_degrees(self, angle_increment_degrees):
+    def __update_angle_increment_degrees(self, angle_increment_degrees):
         if not 0 < angle_increment_degrees <= 360:
             raise ValueError("angle_increment_degrees must be between 0 and 360")
         # find the number of rays
@@ -39,21 +39,24 @@ class PointSource(LightSource):
             # calculate the direction vector
             direction = np.array([math.cos(angle), math.sin(angle)])
             # calculate position of where light rays should start
-            position = np.array(self._LightSource__position) + direction * self.point_source_radius
+            position = np.array(self.get_position()) + direction * self.__point_source_radius
             # create a new instance of a ray object
-            self._LightSource__rays.append(
+            self.get_emitted_rays().append(
                 Ray(
                 position,
                 direction,
-                self._LightSource__wavelength,
-                self._LightSource__intensity,
+                self.get_wavelength(),
+                self.get_intensity(),
                 )
             )
     def get_selectable_points(self):
         # Return a list of points that can be selected for this light source
         return [self.get_position()]
 
+    def get_point_source_radius(self):
+        return self.__point_source_radius
+
     def update_position(self, new_position: tuple[float, float]):
         super().update_position(new_position)
-        self._LightSource__rays.clear()
-        self.update_rays()
+        self.get_emitted_rays().clear()
+        self.__update_rays()

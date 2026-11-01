@@ -4,6 +4,12 @@ package "src" as src {
 }
 package "src.GUI" as src.GUI {
 }
+package "src.GUI.glass_shape_renderer" as src.GUI.glass_shape_renderer {
+}
+package "src.GUI.input_handler" as src.GUI.input_handler {
+}
+package "src.GUI.light_source_renderer" as src.GUI.light_source_renderer {
+}
 package "src.GUI.renderer" as src.GUI.renderer {
 }
 package "src.GUI.scene" as src.GUI.scene {
@@ -17,6 +23,12 @@ package "src.core.ray" as src.core.ray {
 package "src.main" as src.main {
 }
 package "src.objects" as src.objects {
+}
+package "src.objects.glass_shapes" as src.objects.glass_shapes {
+}
+package "src.objects.glass_shapes.Polygon" as src.objects.glass_shapes.Polygon {
+}
+package "src.objects.glass_shapes.Rectangle" as src.objects.glass_shapes.Rectangle {
 }
 package "src.objects.light_sources" as src.objects.light_sources {
 }

@@ -60,7 +60,7 @@ class Beam(LightSource):
         self.__direction = self.__calculate_normal_direction()
 
         # Clear existing rays and create new ones based on the updated points
-        self._LightSource__rays.clear()
+        self.get_emitted_rays().clear()
         self.__create_rays()
 
     def __calculate_normal_direction(self):
@@ -96,12 +96,12 @@ class Beam(LightSource):
             ray = Ray(
                 ray_position,
                 self.__direction,
-                self._LightSource__wavelength,
-                self._LightSource__intensity,
+                self.get_wavelength(),
+                self.get_intensity(),
             )
 
             # Add the ray to the inherited light source ray list
-            self._LightSource__rays.append(ray)
+            self.get_emitted_rays().append(ray)
 
     def get_selectable_points(self):
         # Return a list of points that can be selected for this light source

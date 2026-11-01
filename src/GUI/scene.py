@@ -3,10 +3,9 @@ from core.ray import Ray
 
 class Scene:
     def __init__(self):
-        # double underscore indicates private attribute
-        self.__light_sources: list[LightSource] = []  # List to hold all light sources in the scene
-        self.__glass_shapes: list[object] = []  # List to hold all glass shapes in the scene
-        self.__refracted_light_rays: list[Ray] = []  # List to hold all refracted light rays in the scene
+        self.__light_sources: list[LightSource] = []
+        self.__glass_shapes: list[object] = []
+        self.__refracted_light_rays: list[Ray] = []
 
     def add_light_source(self, light_source: LightSource):
         self.__light_sources.append(light_source)  # Add a light source to the scene
@@ -25,8 +24,8 @@ class Scene:
         for light_source in self.__light_sources:
             for ray in light_source.get_emitted_rays():
                 for glass_shape in self.__glass_shapes:
-                    self.handle_intersection(ray, glass_shape)
+                    self.__handle_intersection(ray, glass_shape)
 
-    def handle_intersection(ray: Ray, glass_shape: object):
+    def __handle_intersection(self, ray: Ray, glass_shape: object):
         # check whether the light ray intersects with the glass shape
         pass

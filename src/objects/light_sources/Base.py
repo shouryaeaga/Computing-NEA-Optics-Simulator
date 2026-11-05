@@ -1,3 +1,6 @@
+from core.ray import Ray
+
+
 class LightSource:
     # defines the shared behaviour for all light sources
     def __init__(self, position: tuple[float, float], wavelength: float = 550.0, intensity: float = 1.0, white_light: bool = False):
@@ -10,7 +13,7 @@ class LightSource:
         # this is a boolean to configure whether the light source is emitting white light or monochromatic light
         self.__white_light = white_light
 
-        self.__rays = []  # Initialize the rays list to store emitted rays
+        self.__rays: list[Ray] = []  # Initialize the rays list to store emitted rays
         self.__being_selected = False
 
     def get_emitted_rays(self):

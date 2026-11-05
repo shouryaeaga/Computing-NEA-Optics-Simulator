@@ -5,6 +5,7 @@ from objects.light_sources.Base import LightSource
 from objects.light_sources.Beam import Beam
 from objects.light_sources.PointSource import PointSource
 from objects.light_sources.SingleRay import SingleRay
+from GUI.scene import Scene
 
 
 class LightSourceRenderer:
@@ -14,31 +15,29 @@ class LightSourceRenderer:
     __UNSELECTED_SQUARE_COLOUR = (255, 0, 0)
     __SQUARE_POINT_SIZE = 5
 
-    def __init__(self, screen: pygame.Surface, transparent_surface: pygame.Surface, super_sampling_factor: int = 4):
+    def __init__(self, screen: pygame.Surface, transparent_surface: pygame.Surface, scene: Scene, super_sampling_factor: int = 4):
         if super_sampling_factor <= 0:
             raise ValueError("super_sampling_factor must be greater than zero.")
 
         self.__screen = screen
         self.__transparent_surface = transparent_surface
         self.__super_sampling_factor = super_sampling_factor
-
+        self.__scene = scene
     def clear_rays(self):
         # Keep the RGB colour in transparent pixels so smoothscale does not
         # introduce dark fringes when it interpolates the ray edges.
         self.__transparent_surface.fill(self.__LIGHT_RAY_COLOUR + (0,))
 
-    def render(self, light_sources: list[LightSource]):
+    def render(self, light_sources: list[LightSource], light_rays: list[Ray]):
         for light_source in light_sources:
-            self.__render_rays(light_source)
             self.__render_source(light_source)
             self.__render_selectable_points(light_source)
-
-    def __render_rays(self, light_source: LightSource):
-        for ray in light_source.get_emitted_rays():
+        # Render the all the rays
+        for ray in light_rays:
             self.__render_ray(ray)
 
     def __render_ray(self, ray: Ray):
-        line_length = 1000
+        line_length = ray.get_distance()
         end_point = ray.get_start_point() + line_length * ray.get_direction()
         pygame.draw.line(
             self.__transparent_surface,

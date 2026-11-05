@@ -7,6 +7,8 @@ from GUI.light_source_renderer import LightSourceRenderer
 from objects.glass_shapes.Rectangle import Rectangle
 from objects.light_sources.Beam import Beam
 from objects.light_sources.PointSource import PointSource
+from GUI.refraction_engine import RefractionEngine
+from objects.light_sources.SingleRay import SingleRay
 
 
 class Renderer:
@@ -32,22 +34,25 @@ class Renderer:
 
         self.__scene = Scene()
         self.__input_handler = InputHandler(self.__scene)
-        self.__light_source_renderer = LightSourceRenderer(self.__screen, self.__transparent_ray_surface)
+        self.__light_source_renderer = LightSourceRenderer(self.__screen, self.__transparent_ray_surface, self.__scene)
         self.__glass_shape_renderer = GlassShapeRenderer(self.__screen, self.__transparent_surface)
+        self.__refraction_engine = RefractionEngine(self.__scene)
 
-        test_glass_shape = Rectangle(100, 50, (400, 400), 1.5)
-        self.__scene.add_glass_shape(test_glass_shape)
-        test_beam = Beam(point_one=(100, 100), point_two=(200, 100), ray_spacing=5, intensity=0.75)
-        self.__scene.add_light_source(test_beam)
-        test_point_source = PointSource(position=(600, 100), intensity=0.75)
-        self.__scene.add_light_source(test_point_source)
-        
+        test_single_ray = SingleRay((100, 100), (200, 100), wavelength=550.0, intensity=1.0)
+        self.__scene.add_light_source(test_single_ray)
+        test_glass = Rectangle(200, 200, (300, 200), refractive_index=1.5)
+        self.__scene.add_glass_shape(test_glass)
+        test_glass_2 = Rectangle(100, 100, (350, 350), 2.0)
+        self.__scene.add_glass_shape(test_glass_2)
+
 
     def run(self):
+        
         while True:
             self.__handle_events()
             self.__render()
-            self.__clock.tick(60)
+            self.__clock.tick(60)  # Limit to 60 frames per second
+
 
     def __handle_events(self):
         for event in pygame.event.get():
@@ -57,6 +62,10 @@ class Renderer:
             self.__input_handler.handle_event(event)
 
         self.__input_handler.update(pygame.mouse.get_pos())
+        # clear the old rays
+        self.__refraction_engine.refracted_rays.clear()
+        self.__refraction_engine.calculate_refractions()
+        
 
     def __render(self):
         self.__screen.fill(self.__BACKGROUND_COLOUR)
@@ -67,7 +76,8 @@ class Renderer:
             self.__scene.get_glass_shapes()
         )
         self.__light_source_renderer.render(
-            self.__scene.get_light_sources()
+            self.__scene.get_light_sources(),
+            self.__refraction_engine.refracted_rays
         )
         
         self.__screen.blit(self.__transparent_surface, (0, 0))

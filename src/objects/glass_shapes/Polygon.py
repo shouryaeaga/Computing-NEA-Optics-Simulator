@@ -14,6 +14,10 @@ class Polygon:
     def get_vertices(self):
         return self.__vertices
 
+    def set_vertices(self, vertices: list[tuple[int, int]]):
+        self.__vertices = vertices
+        self.calculate_edges()
+
     def get_position(self):
         return self.__position
 

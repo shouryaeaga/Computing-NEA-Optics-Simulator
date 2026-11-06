@@ -65,4 +65,4 @@ class Rectangle(Polygon):
             (self.__position[0] + self.__width, self.__position[1] + self.__height),
             (self.__position[0], self.__position[1] + self.__height)
         ]
-        self.calculate_edges()
+        self.set_vertices(self.__vertices)

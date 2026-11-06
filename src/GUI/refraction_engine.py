@@ -29,6 +29,7 @@ class RefractionEngine:
 
             refracted_ray, point = self.__get_refracted_ray(ray)
             if refracted_ray is None:  # ray escaped the scene, leave it at its default length
+                ray.set_distance(1000)
                 continue
 
             # make this ray end at the intersection point, so it does not continue.
@@ -88,6 +89,7 @@ class RefractionEngine:
         closest_glass_shape = None
         closest_distance = None
         closest_edge = None
+        inside_glass_shape = False
         for glass_shape in self.__scene.get_glass_shapes():
             # check if the glass shape is a polygon
             intersection_points = []
@@ -122,9 +124,16 @@ class RefractionEngine:
                     closest_edge = closest_edge_glass
             # if the ray is inside the polygon, then the number of intersections should be odd
             # so we can set the ray's refractive index to the glass shape's refractive index
+            # this is known as the Ray Casting algorithm
             number_of_intersections = len(intersection_points)
             if number_of_intersections % 2 == 1:
                 ray.set_refractive_index(glass_shape.get_refractive_index())
+                inside_glass_shape = True
+
+        # Emitted rays are reused when their light source moves. Reset the
+        # medium when the start point is no longer inside a glass shape.
+        if not inside_glass_shape:
+            ray.set_refractive_index(AIR_REFRACTIVE_INDEX)
         return closest_intersection_point, closest_glass_shape, closest_edge
 
 

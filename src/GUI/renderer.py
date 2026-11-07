@@ -56,6 +56,7 @@ class Renderer:
             self.__handle_events()
             self.__render()
             self.__clock.tick(60)  # Limit to 60 frames per second
+            
 
 
     def __handle_events(self):
@@ -86,4 +87,9 @@ class Renderer:
         
         self.__screen.blit(self.__transparent_surface, (0, 0))
         self.__screen.blit(pygame.transform.smoothscale(self.__transparent_ray_surface, self.__WINDOW_SIZE), (0, 0))
+
+        # write text on the screen for fps in top left corner small
+        font = pygame.font.SysFont("Arial", 18)
+        fps_text = font.render(f"FPS: {int(self.__clock.get_fps())}", True, (255, 255, 255))
+        self.__screen.blit(fps_text, (10, 10))
         pygame.display.flip()

@@ -1,37 +1,49 @@
 @startuml classes_Optics
+' ---------- Appearance ----------
 skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam dpi 200
+skinparam defaultFontName Arial
+skinparam defaultFontSize 18
+skinparam classFontSize 22
+skinparam classAttributeFontSize 17
+skinparam classFontStyle bold
+skinparam ArrowFontSize 16
+skinparam nodesep 20
+skinparam ranksep 35
+skinparam padding 3
+skinparam roundCorner 4
+hide circle
 set namespaceSeparator none
-class "Beam" as src.objects.light_sources.Beam.Beam {
-  -direction
-  -point_one : tuple
-  -point_two : tuple
-  -ray_spacing : float
-  -calculate_normal_direction()
-  -create_rays()
-  +__init__(point_one: tuple, point_two: tuple, ray_spacing: float, wavelength: float, intensity: float)
-  +get_endpoints()
-  +get_selectable_points()
-  +update_points(new_point_one: tuple, new_point_two: tuple)
-}
-class "GlassShapeRenderer" as src.GUI.glass_shape_renderer.GlassShapeRenderer {
-  -POLYGON_ALPHA : int
-  -POLYGON_COLOUR : tuple
-  -SELECTED_SQUARE_COLOUR : tuple
-  -SQUARE_POINT_SIZE : int
-  -UNSELECTED_SQUARE_COLOUR : tuple
+' skinparam linetype ortho   ' uncomment for right-angled lines
+
+' ---------- Classes ----------
+class Renderer {
+  -BACKGROUND_COLOUR : tuple
+  -SUPER_SAMPLING_FACTOR : int
+  -WINDOW_SIZE : tuple
+  -clock
+  -glass_shape_renderer
+  -input_handler
+  -light_source_renderer
+  -refraction_engine
+  -scene
   -screen
-  -transparent_surface
-  +__init__(screen: pygame.Surface, transparent_surface: pygame.Surface)
-  -render_point_square(position, colour)
-  -render_polygon(polygon: Polygon)
-  -render_selectable_points(polygon: Polygon)
-  +render(glass_shapes: list)
+  -transparent_ray_surface : NoneType
+  -transparent_surface : NoneType
+  --
+  -handle_events()
+  +__init__()
+  -render()
+  +run()
 }
-class "InputHandler" as src.GUI.input_handler.InputHandler {
+
+class InputHandler {
   -SELECTION_DISTANCE : int
   -dragged_object : NoneType
   -dragged_point_index : NoneType
   -scene
+  --
   +__init__(scene: Scene)
   -is_near_point(first_point, second_point)
   -start_drag(mouse_position)
@@ -41,14 +53,77 @@ class "InputHandler" as src.GUI.input_handler.InputHandler {
   +handle_event(event: pygame.event.Event)
   +update(mouse_position)
 }
-class "LightSource" as src.objects.light_sources.Base.LightSource {
+
+class Scene {
+  -glass_shapes : list
+  -light_sources : list
+  -refracted_light_rays : list
+  --
+  -{abstract} handle_intersection(ray: Ray,\n      glass_shape: object)
+  +__init__()
+  +add_glass_shape(glass_shape: object)
+  +add_light_source(light_source: LightSource)
+  +get_glass_shapes()
+  +get_light_sources()
+  +handle_refractions()
+}
+
+class RefractionEngine {
+  -scene
+  +refracted_rays : list
+  --
+  -find_closest_intersection(ray: Ray)
+  -get_refracted_ray(ray: Ray)
+  +__init__(scene: Scene)
+  +calculate_intersection(ray: Ray,\n      edge: tuple) -> tuple | None
+  +calculate_refractions()
+}
+
+class GlassShapeRenderer {
+  -POLYGON_ALPHA : int
+  -POLYGON_COLOUR : tuple
+  -SELECTED_SQUARE_COLOUR : tuple
+  -SQUARE_POINT_SIZE : int
+  -UNSELECTED_SQUARE_COLOUR : tuple
+  -screen
+  -transparent_surface
+  --
+  +__init__(screen: pygame.Surface,\n      transparent_surface: pygame.Surface)
+  -render_point_square(position, colour)
+  -render_polygon(polygon: Polygon)
+  -render_selectable_points(polygon: Polygon)
+  +render(glass_shapes: list)
+}
+
+class LightSourceRenderer {
+  -LIGHT_RAY_COLOUR : tuple
+  -LIGHT_SOURCE_COLOUR : tuple
+  -SELECTED_SQUARE_COLOUR : tuple
+  -SQUARE_POINT_SIZE : int
+  -UNSELECTED_SQUARE_COLOUR : tuple
+  -scene
+  -screen
+  -super_sampling_factor : int
+  -transparent_surface
+  --
+  +__init__(screen: pygame.Surface,\n      transparent_surface: pygame.Surface,\n      scene: Scene,\n      super_sampling_factor: int)
+  -render_point_square(position, colour)
+  -render_ray(ray: Ray)
+  -render_selectable_points(light_source: LightSource)
+  -render_source(light_source: LightSource)
+  +clear_rays()
+  +render(light_sources: list,\n      light_rays: list)
+}
+
+class LightSource {
   -being_selected : bool
   -intensity : float
   -position : tuple
   -rays : list
   -wavelength : float
   -white_light : bool
-  +__init__(position: tuple, wavelength: float, intensity: float, white_light: bool)
+  --
+  +__init__(position: tuple, wavelength: float,\n      intensity: float, white_light: bool)
   +get_emitted_rays()
   +get_intensity()
   +get_position()
@@ -59,131 +134,128 @@ class "LightSource" as src.objects.light_sources.Base.LightSource {
   +set_selected(selected: bool)
   +update_position(new_position: tuple)
 }
-class "LightSourceRenderer" as src.GUI.light_source_renderer.LightSourceRenderer {
-  -LIGHT_RAY_COLOUR : tuple
-  -LIGHT_SOURCE_COLOUR : tuple
-  -SELECTED_SQUARE_COLOUR : tuple
-  -SQUARE_POINT_SIZE : int
-  -UNSELECTED_SQUARE_COLOUR : tuple
-  -screen
-  -super_sampling_factor : int
-  -transparent_surface
-  +__init__(screen: pygame.Surface, transparent_surface: pygame.Surface, super_sampling_factor: int)
-  -render_point_square(position, colour)
-  -render_ray(ray: Ray)
-  -render_rays(light_source: LightSource)
-  -render_selectable_points(light_source: LightSource)
-  -render_source(light_source: LightSource)
-  +clear_rays()
-  +render(light_sources: list)
-}
-class "PointSource" as src.objects.light_sources.PointSource.PointSource {
+
+class PointSource {
   -RAY_ANGLE_INCREMENT_DEGREES : float
   -point_source_radius : float
-  +__init__(position: tuple, wavelength: float, intensity: float, angle_increment_degrees: float, point_source_radius)
+  --
+  +__init__(position: tuple, wavelength: float,\n      intensity: float,\n      angle_increment_degrees: float,\n      point_source_radius)
   -update_angle_increment_degrees(angle_increment_degrees)
   -update_rays()
   +get_point_source_radius()
   +get_selectable_points()
   +update_position(new_position: tuple)
 }
-class "Polygon" as src.objects.glass_shapes.Polygon.Polygon {
+
+class SingleRay {
+  -direction_point : tuple
+  -point_source_radius : float
+  -ray_direction
+  --
+  +__init__(position: tuple, direction_point: tuple,\n      wavelength: float, intensity: float,\n      point_source_radius)
+  +get_selectable_points()
+  +update_direction(new_direction_point)
+}
+
+class Beam {
+  -direction
+  -point_one : tuple
+  -point_two : tuple
+  -ray_spacing : float
+  --
+  -calculate_normal_direction()
+  -create_rays()
+  +__init__(point_one: tuple, point_two: tuple,\n      ray_spacing: float, wavelength: float,\n      intensity: float)
+  +get_endpoints()
+  +get_selectable_points()
+  +update_points(new_point_one: tuple,\n      new_point_two: tuple)
+}
+
+class Ray {
+  -depth : int
+  -direction
+  -distance : int
+  -intensity : float
+  -refractive_index : float
+  -start_point
+  -wavelength : int
+  --
+  +__init__(start_point, direction, wavelength,\n      intensity, depth,\n      refractive_index, distance)
+  +get_depth()
+  +get_direction()
+  +get_distance()
+  +get_intensity()
+  +get_refractive_index()
+  +get_start_point()
+  +get_wavelength()
+  +set_direction(direction)
+  +set_distance(distance)
+  +set_refractive_index(refractive_index)
+  +set_start_point(start_point)
+}
+
+class Polygon {
   -being_selected : bool
+  -edges : list
   -position : tuple
   -refractive_index : float
   -vertices : list
-  +__init__(vertices: list, position: tuple, refractive_index: float)
+  --
+  +__init__(vertices: list, position: tuple,\n      refractive_index: float)
+  +calculate_edges()
+  +get_edges()
   +get_position()
   +get_refractive_index()
   +get_vertices()
   +is_selected()
   +set_selected(selected: bool)
+  +set_vertices(vertices: list)
 }
-class "Ray" as src.core.ray.Ray {
-  -depth : int
-  -direction
-  -intensity : float
-  -start_point
-  -wavelength : int
-  +__init__(start_point, direction, wavelength, intensity, depth)
-  +get_depth()
-  +get_direction()
-  +get_intensity()
-  +get_start_point()
-  +get_wavelength()
-  +set_direction(direction)
-  +set_start_point(start_point)
-}
-class "Rectangle" as src.objects.glass_shapes.Rectangle.Rectangle {
+
+class Rectangle {
   -height : int
   -position : tuple
   -vertices : list
   -width : int
-  +__init__(width: int, height: int, position: tuple, refractive_index: float)
+  --
+  +__init__(width: int, height: int,\n      position: tuple, refractive_index: float)
   +get_vertices()
   +update_size(point: tuple, point_type: str)
 }
-class "Renderer" as src.GUI.renderer.Renderer {
-  -BACKGROUND_COLOUR : tuple
-  -SUPER_SAMPLING_FACTOR : int
-  -WINDOW_SIZE : tuple
-  -clock
-  -glass_shape_renderer
-  -input_handler
-  -light_source_renderer
-  -scene
-  -screen
-  -transparent_ray_surface : NoneType
-  -transparent_surface : NoneType
-  -handle_events()
-  +__init__()
-  -render()
-  +run()
-}
-class "Scene" as src.GUI.scene.Scene {
-  -glass_shapes : list
-  -light_sources : list
-  -refracted_light_rays : list
-  -{abstract} handle_intersection(ray: Ray, glass_shape: object)
-  +__init__()
-  +add_glass_shape(glass_shape: object)
-  +add_light_source(light_source: LightSource)
-  +get_glass_shapes()
-  +get_light_sources()
-  +handle_refractions()
-}
-class "SingleRay" as src.objects.light_sources.SingleRay.SingleRay {
-  -direction_point : tuple
-  -point_source_radius : float
-  -ray_direction
-  +__init__(position: tuple, direction_point: tuple, wavelength: float, intensity: float, point_source_radius)
-  +get_selectable_points()
-  +update_direction(new_direction_point)
-}
-src.objects.light_sources.Beam.Beam --|> src.objects.light_sources.Base.LightSource
-src.objects.light_sources.PointSource.PointSource --|> src.objects.light_sources.Base.LightSource
-src.objects.light_sources.SingleRay.SingleRay --|> src.objects.light_sources.Base.LightSource
-' Light sources own their Rays
-src.objects.light_sources.Base.LightSource "1" *-- "0..*" src.core.ray.Ray
 
-' Renderer owns its collaborators
-src.GUI.renderer.Renderer *--> src.GUI.scene.Scene
-src.GUI.renderer.Renderer *--> src.GUI.input_handler.InputHandler
-src.GUI.renderer.Renderer *--> src.GUI.glass_shape_renderer.GlassShapeRenderer
-src.GUI.renderer.Renderer *--> src.GUI.light_source_renderer.LightSourceRenderer
+' ---------- Inheritance ----------
+Beam --|> LightSource
+PointSource --|> LightSource
+SingleRay --|> LightSource
+Rectangle --|> Polygon
 
-' Scene associations
-src.GUI.scene.Scene --> "0..*" src.objects.light_sources.Base.LightSource
-src.GUI.scene.Scene --> "0..*" src.objects.glass_shapes.Polygon.Polygon
-src.GUI.scene.Scene --> "0..*" src.core.ray.Ray : refracted rays
-src.GUI.input_handler.InputHandler --> src.GUI.scene.Scene
+' ---------- Composition / associations ----------
+LightSource "1" *-- "0..*" Ray
 
-' Renderers depend on what they draw
-src.GUI.glass_shape_renderer.GlassShapeRenderer ..> src.objects.glass_shapes.Polygon.Polygon
-src.GUI.light_source_renderer.LightSourceRenderer ..> src.objects.light_sources.Base.LightSource
-src.GUI.light_source_renderer.LightSourceRenderer ..> src.core.ray.Ray
+Renderer *--> Scene
+Renderer *--> InputHandler
+Renderer *--> GlassShapeRenderer
+Renderer *--> LightSourceRenderer
+Renderer *--> RefractionEngine
 
-' Only uncomment if Rectangle is declared as class Rectangle(Polygon)
-' and pyreverse has not drawn the arrow itself:
-' src.objects.glass_shapes.Rectangle.Rectangle --|> src.objects.glass_shapes.Polygon.Polygon
+Scene --> "0..*" LightSource
+Scene --> "0..*" Polygon
+Scene --> "0..*" Ray : refracted rays
+InputHandler --> Scene
+RefractionEngine --> Scene
+LightSourceRenderer --> Scene
+
+' ---------- Dependencies ----------
+GlassShapeRenderer ..> Polygon
+LightSourceRenderer ..> LightSource
+LightSourceRenderer ..> Ray
+RefractionEngine ..> Ray
+
+' ---------- Layout hints (invisible) ----------
+InputHandler -[hidden]right-> Scene
+Scene -[hidden]right-> RefractionEngine
+GlassShapeRenderer -[hidden]right-> LightSourceRenderer
+PointSource -[hidden]right-> SingleRay
+SingleRay -[hidden]right-> Beam
+Polygon -[hidden]right-> Rectangle
 @enduml

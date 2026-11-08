@@ -58,7 +58,11 @@ class RefractionEngine:
             n1 = ray.get_refractive_index()
             glass_index = glass_shape.get_refractive_index()
             if np.isclose(n1, glass_index):
-                n2 = AIR_REFRACTIVE_INDEX
+                # The ray may be leaving this shape, or entering a neighbouring
+                # shape with the same index. 
+                # SO we can looka t a point a tiny bit ahead to see if it is inside a glass shape or nah.
+                probe_point = np.array(point) + np.array(ray.get_direction()) * 1e-6
+                n2 = self.__get_refractive_index_at_point(probe_point)
             else:
                 n2 = glass_index
             new_direction = snells_law(
@@ -82,6 +86,38 @@ class RefractionEngine:
             )
             return refracted_ray, point
         return None, None  # no intersection point found, so the ray escapes the scene
+
+    def __get_refractive_index_at_point(self, point):
+        # Return the index of the glass containing this point. If no polygon
+        # contains it, the point is in the surrounding air.
+        for glass_shape in self.__scene.get_glass_shapes():
+            if isinstance(glass_shape, Polygon) and self.__point_is_inside_polygon(point, glass_shape):
+                return glass_shape.get_refractive_index()
+        return AIR_REFRACTIVE_INDEX
+
+    def __point_is_inside_polygon(self, point, polygon):
+        # Cast an imaginary horizontal ray from the point to the right. Every
+        # time it crosses a polygon edge, toggle the inside/outside state.
+        # THis works since if the point is inside, it gets toggled an even number of times and stays False
+        # and if it is is outside, it gets toggled an aodd number of times and becomes True. This is known as the Ray Casting Algorithm.
+        x, y = point
+        inside = False
+        vertices = polygon.get_vertices()
+
+        for index, (x1, y1) in enumerate(vertices):
+            # Use the current vertex and the next one
+            # it wraps around for the final edge
+            x2, y2 = vertices[(index + 1) % len(vertices)]
+            # it must intersect if the y-coordinate of the point is between the y-coordinates of the edge's endpoints
+            if (y1 > y) != (y2 > y):
+                # Find the x-coordinate where this edge crosses the horizontal
+                # line through the point. 
+                # A crossing rightwards is counted as an intersection cause the ray is shot out to the right
+                intersection_x = (x2 - x1) * (y - y1) / (y2 - y1) + x1
+                if x < intersection_x:
+                    inside = not inside
+
+        return inside
 
     def __find_closest_intersection(self, ray: Ray):
         # loop through all glass shapes

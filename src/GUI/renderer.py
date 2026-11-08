@@ -38,17 +38,14 @@ class Renderer:
         self.__glass_shape_renderer = GlassShapeRenderer(self.__screen, self.__transparent_surface)
         self.__refraction_engine = RefractionEngine(self.__scene)
 
-        test_single_ray = SingleRay((100, 100), (200, 150), wavelength=550.0, intensity=1.0)
-        test_point_source = PointSource((400, 100), wavelength=550.0, intensity=1.0)
-        test_beam = Beam((100, 100), (200, 200), 5.0)
-        self.__scene.add_light_source(test_single_ray)
-        self.__scene.add_light_source(test_point_source)
-        self.__scene.add_light_source(test_beam)
-        test_glass = Rectangle(200, 200, (300, 200), refractive_index=1.5)
-        self.__scene.add_glass_shape(test_glass)
-        test_glass_2 = Rectangle(100, 100, (350, 350), 2.0)
-        self.__scene.add_glass_shape(test_glass_2)
+        # No kink should appear at x = 400, so the path matches a single 300-wide block
+        test_ray = SingleRay((300, 250), (400, 300), wavelength=550.0, intensity=1.0)
+        self.__scene.add_light_source(test_ray)
 
+        glass_a = Rectangle(150, 300, (250, 150), refractive_index=1.5)
+        glass_b = Rectangle(150, 300, (400, 150), refractive_index=1.5)
+        self.__scene.add_glass_shape(glass_a)
+        self.__scene.add_glass_shape(glass_b)
 
     def run(self):
         

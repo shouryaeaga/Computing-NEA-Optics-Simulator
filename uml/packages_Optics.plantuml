@@ -10,6 +10,8 @@ package "src.GUI.input_handler" as src.GUI.input_handler {
 }
 package "src.GUI.light_source_renderer" as src.GUI.light_source_renderer {
 }
+package "src.GUI.refraction_engine" as src.GUI.refraction_engine {
+}
 package "src.GUI.renderer" as src.GUI.renderer {
 }
 package "src.GUI.scene" as src.GUI.scene {

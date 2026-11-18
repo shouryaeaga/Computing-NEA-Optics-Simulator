@@ -22,11 +22,15 @@ class InputHandler:
             self.__stop_drag()
         elif event.type == pygame.MOUSEMOTION and self.__dragged_object is None:
             self.__update_hover_state(event.pos)
+        
 
     def update(self, mouse_position):
         # update and drag the selected object if there is one
         if self.__dragged_object is not None:
             self.__update_dragged_object(mouse_position)
+            return True  # Indicate that an update has happened
+        else:
+            return False  # Indicate that no update has happened
 
     def __start_drag(self, mouse_position):
         for light_source in self.__scene.get_light_sources():

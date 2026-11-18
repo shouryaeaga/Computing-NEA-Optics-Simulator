@@ -1,4 +1,8 @@
 from GUI.renderer import Renderer
 
-renderer = Renderer()
-renderer.run()
+def main():
+    renderer = Renderer()
+    renderer.run()
+
+if __name__ == "__main__":
+    main()

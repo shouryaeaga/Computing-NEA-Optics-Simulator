@@ -9,6 +9,7 @@ from objects.light_sources.Beam import Beam
 from objects.light_sources.PointSource import PointSource
 from GUI.refraction_engine import RefractionEngine
 from objects.light_sources.SingleRay import SingleRay
+import multiprocessing as mp
 
 
 class Renderer:
@@ -37,6 +38,7 @@ class Renderer:
         self.__light_source_renderer = LightSourceRenderer(self.__screen, self.__transparent_ray_surface, self.__scene)
         self.__glass_shape_renderer = GlassShapeRenderer(self.__screen, self.__transparent_surface)
         self.__refraction_engine = RefractionEngine(self.__scene)
+        self.__refraction_engine.start()  # Start the refraction engine in a separate process
 
         # No kink should appear at x = 400, so the path matches a single 300-wide block
         test_ray = SingleRay((300, 250), (400, 300), wavelength=550.0, intensity=1.0)
@@ -48,7 +50,7 @@ class Renderer:
         self.__scene.add_glass_shape(glass_b)
 
     def run(self):
-        
+        self.__refraction_engine.submit_data(self.__scene)  # Initial calculation of refractions
         while True:
             self.__handle_events()
             self.__render()
@@ -63,10 +65,10 @@ class Renderer:
                 raise SystemExit
             self.__input_handler.handle_event(event)
 
-        self.__input_handler.update(pygame.mouse.get_pos())
+        has_update_happend = self.__input_handler.update(pygame.mouse.get_pos()) # check for whether an update has occurred to the system
         # clear the old rays
-        self.__refraction_engine.refracted_rays.clear()
-        self.__refraction_engine.calculate_refractions()
+        if has_update_happend:
+            self.__refraction_engine.submit_data(self.__scene) # clears out any old rays and submit new data.
         
 
     def __render(self):
@@ -77,9 +79,10 @@ class Renderer:
         self.__glass_shape_renderer.render(
             self.__scene.get_glass_shapes()
         )
+        rays = self.__refraction_engine.poll_data()  # Get the latest rays from the refraction engine
         self.__light_source_renderer.render(
             self.__scene.get_light_sources(),
-            self.__refraction_engine.refracted_rays
+            rays
         )
         
         self.__screen.blit(self.__transparent_surface, (0, 0))

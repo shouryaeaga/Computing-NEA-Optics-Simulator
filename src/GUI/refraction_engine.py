@@ -5,23 +5,66 @@ from GUI.scene import Scene
 from objects.glass_shapes.Polygon import Polygon
 from core.optics_maths import snells_law
 from collections import deque
+import multiprocessing as mp
 
 MAX_DEPTH = 25
 AIR_REFRACTIVE_INDEX = 1.0
 
-class RefractionEngine:
+class RefractionEngine(mp.Process):
     def __init__(self, scene: Scene):
+        super().__init__(daemon=True) # this would initialise the process
         self.__scene = scene
         self.refracted_rays: list[Ray] = []  # Store the refracted rays in the scene
+        self.__in_queue = mp.Queue() # Queue for incoming rays to be processed
+        self.__out_queue = mp.Queue() # Queue for outgoing rays after processing
 
-    def calculate_refractions(self):
+
+    def submit_data(self, scene: Scene):
+        self.__scene = scene
+        self.refracted_rays.clear()  # Clear the previous refracted rays
+        # clear both input and output queues
+        while not self.__in_queue.empty():
+            self.__in_queue.get()
+        while not self.__out_queue.empty():
+            self.__out_queue.get()
+        self.__in_queue.put(scene.get_light_sources())  # Submit the light sources to the queue for processing
+        self.__scene = scene  # Update the scene reference in the engine
+
+    # get some data at some point from the engine
+    def poll_data(self):
+        # Return the refracted rays and clear the list for the next calculation
+        while True:
+            try:
+                # get the refracted rays from the output queue and add them to the result list
+                ray = self.__out_queue.get_nowait()
+                self.refracted_rays.append(ray)
+                print(f"Ray added to refracted rays: {ray.get_start_point()} -> {ray.get_direction()}")
+            except mp.queues.Empty:
+                break
+        # print(f"Returning {len(self.refracted_rays)} refracted rays.")
+        rays = self.refracted_rays.copy()
+        self.refracted_rays.clear()
+        return rays
+
+    # Run automatically when starting the class.
+    def run(self):
+        print("Refraction engine started.")
+        while True:
+            job = self.__in_queue.get()  # Wait for a job to be submitted
+            if job is None:
+                break  # Exit the loop if a None job is received
+            self.calculate_refractions(job)  # Process the job and calculate refractions
+            print("Refraction calculation completed.")
+        print("Refraction engine stopped.")
+
+    def calculate_refractions(self, job=None):
         queue = deque()
-        for light_source in self.__scene.get_light_sources():
+        for light_source in job:
             queue.extend(light_source.get_emitted_rays())
 
         while queue:
             ray = queue.popleft()
-            self.refracted_rays.append(ray)  # every ray is stored exactly once
+            
 
             # we only want to refract rays that have not reached the maximum depth
             if ray.get_depth() >= MAX_DEPTH:
@@ -35,6 +78,8 @@ class RefractionEngine:
             # make this ray end at the intersection point, so it does not continue.
             start = np.array(ray.get_start_point(), dtype=float)
             ray.set_distance(np.linalg.norm(np.array(point) - start))
+            # put the ray in the output queue
+            self.__out_queue.put(ray)
             queue.append(refracted_ray)
 
                 

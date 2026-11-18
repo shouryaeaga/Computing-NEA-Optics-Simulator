@@ -124,7 +124,7 @@ class TestRefractionEngine(unittest.TestCase):
         scene.add_glass_shape(glass_shape)
         ray = Ray((0.0, 0.0), (1.0, 0.0), depth=2, refractive_index=1.5)
 
-        refracted_ray, point = engine._RefractionEngine__get_refracted_ray(ray)
+        refracted_ray, reflected_ray, point = engine._RefractionEngine__get_refracted_ray(ray)
         self.print_input_output(
             "__get_refracted_ray",
             (ray.get_start_point(), ray.get_direction(), ray.get_refractive_index()),
@@ -142,7 +142,7 @@ class TestRefractionEngine(unittest.TestCase):
         engine = RefractionEngine(scene)
         ray = Ray((0.0, 0.0), (1.0, 0.0))
 
-        refracted_ray, point = engine._RefractionEngine__get_refracted_ray(ray)
+        refracted_ray, reflected_ray, point = engine._RefractionEngine__get_refracted_ray(ray)
         self.print_input_output(
             "__get_refracted_ray",
             (ray.get_start_point(), ray.get_direction(), "no_glass"),
@@ -150,6 +150,21 @@ class TestRefractionEngine(unittest.TestCase):
         )
         self.assertIsNone(refracted_ray)
         self.assertIsNone(point)
+
+    def test_total_internal_reflection(self):
+        scene = Scene()
+        engine = RefractionEngine(scene)
+        glass_shape = self.make_square(-1, -1, 1, 1, refractive_index=1.5)
+        scene.add_glass_shape(glass_shape)
+        ray = Ray((0.0, -0.5), (0.6, 0.8), refractive_index=1.5)
+
+        refracted_ray, reflected_ray, point = engine._RefractionEngine__get_refracted_ray(ray)
+
+        self.assertIsNotNone(point)
+        self.assertIsNone(refracted_ray)
+        self.assertIsNotNone(reflected_ray)
+        self.assertAlmostEqual(reflected_ray.get_refractive_index(), 1.5)
+        self.assertAlmostEqual(reflected_ray.get_intensity(), ray.get_intensity())
 
     def test_calculate_refractions(self):
         # Test 1: ray escapes the scene and gets default finite draw distance

@@ -8,6 +8,7 @@ from collections import deque
 
 MAX_DEPTH = 25
 AIR_REFRACTIVE_INDEX = 1.0
+MIN_RAY_INTENSITY = 0.001
 
 class RefractionEngine:
     def __init__(self, scene: Scene):
@@ -22,6 +23,8 @@ class RefractionEngine:
         while queue:
             ray = queue.popleft()
             self.refracted_rays.append(ray)  # every ray is stored exactly once
+            if ray.get_intensity() < MIN_RAY_INTENSITY:
+                continue
 
             # we only want to refract rays that have not reached the maximum depth
             if ray.get_depth() >= MAX_DEPTH:
@@ -29,13 +32,18 @@ class RefractionEngine:
 
             refracted_ray, reflected_ray, point = self.__get_refracted_ray(ray)
             if refracted_ray is None:  # ray escaped the scene, leave it at its default length
-                ray.set_distance(1000)
+                if reflected_ray is not None:
+                    ray.set_distance(np.linalg.norm(np.array(point) - np.array(ray.get_start_point())))
+                    queue.append(reflected_ray)
+                else:
+                    ray.set_distance(1000)
                 continue
 
             # make this ray end at the intersection point, so it does not continue.
             start = np.array(ray.get_start_point(), dtype=float)
             ray.set_distance(np.linalg.norm(np.array(point) - start))
-            queue.append(refracted_ray)
+            if refracted_ray is not None:
+                queue.append(refracted_ray)
             if reflected_ray is not None:
                 queue.append(reflected_ray)
 
@@ -82,13 +90,28 @@ class RefractionEngine:
             current_ray_intensity = ray.get_intensity()
             transmitted_intensity = current_ray_intensity
 
-            # calculate the reflected ray from fresnel equations
-            # first need to find the angle of incidence
-            if square_root_term > 0:
+            reflected_vector = reflection_vector(
+                np.array(ray.get_direction(), dtype=float),
+                normal_vector,
+            )
+
+            if square_root_term < 0:
+                # Total internal reflection: all remaining intensity reflects.
+                reflected_ray = Ray(
+                    np.array(point) + reflected_vector * 1e-6,
+                    reflected_vector,
+                    ray.get_wavelength(),
+                    current_ray_intensity,
+                    ray.get_depth() + 1,
+                    n1,
+                )
+                refracted_ray = None
+                return refracted_ray, reflected_ray, point
+
+            # Calculate partial reflection using the Fresnel equations.
+            if square_root_term >= 0:
                 angle_of_incidence = np.arccos(cos_theta_i)
                 reflected_intensity = fresnel_reflectance(n1, n2, angle_of_incidence)
-                # use the reflectance now
-                reflected_vector = reflection_vector(np.array(ray.get_direction(), dtype=float), normal_vector)
                 reflected_ray = Ray(
                     np.array(point) + reflected_vector * 1e-6,
                     reflected_vector,
@@ -99,9 +122,6 @@ class RefractionEngine:
                 )
                 transmitted_intensity = current_ray_intensity - reflected_intensity*current_ray_intensity
                 
-
-
-
             refracted_ray = Ray(
                 next_start,
                 new_direction,
@@ -112,7 +132,7 @@ class RefractionEngine:
             )
             
             return refracted_ray, reflected_ray, point
-        return None, None  # no intersection point found, so the ray escapes the scene
+        return None, None, None  # no intersection point found, so the ray escapes the scene
 
     def __get_refractive_index_at_point(self, point):
         # Return the index of the glass containing this point. If no polygon

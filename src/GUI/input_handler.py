@@ -27,6 +27,8 @@ class InputHandler:
         # update and drag the selected object if there is one
         if self.__dragged_object is not None:
             self.__update_dragged_object(mouse_position)
+            return True
+        return False
 
     def __start_drag(self, mouse_position):
         for light_source in self.__scene.get_light_sources():

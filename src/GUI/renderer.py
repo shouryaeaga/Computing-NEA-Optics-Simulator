@@ -37,22 +37,24 @@ class Renderer:
         self.__light_source_renderer = LightSourceRenderer(self.__screen, self.__transparent_ray_surface, self.__scene)
         self.__glass_shape_renderer = GlassShapeRenderer(self.__screen, self.__transparent_surface)
         self.__refraction_engine = RefractionEngine(self.__scene)
+        self.__scene_changed = True
 
         # No kink should appear at x = 400, so the path matches a single 300-wide block
-        test_ray = SingleRay((300, 250), (400, 300), wavelength=550.0, intensity=1.0)
-        self.__scene.add_light_source(test_ray)
+        test_point = PointSource((500, 400), wavelength=412)
+        self.__scene.add_light_source(test_point)
+        test_point2 = PointSource((500, 200), wavelength=532)
+        self.__scene.add_light_source(test_point2)
 
-        glass_a = Rectangle(150, 300, (250, 150), refractive_index=1.5)
-        glass_b = Rectangle(150, 300, (400, 150), refractive_index=1.5)
+        glass_a = Rectangle(150, 300, (250, 150), refractive_index=2.0)
         self.__scene.add_glass_shape(glass_a)
-        self.__scene.add_glass_shape(glass_b)
 
     def run(self):
-        
+        self.__refraction_engine.refracted_rays.clear()
+        self.__refraction_engine.calculate_refractions()
         while True:
             self.__handle_events()
             self.__render()
-            self.__clock.tick(60)  # Limit to 60 frames per second
+            self.__clock.tick(165)  # Limit to 60 frames per second
             
 
 
@@ -63,24 +65,27 @@ class Renderer:
                 raise SystemExit
             self.__input_handler.handle_event(event)
 
-        self.__input_handler.update(pygame.mouse.get_pos())
-        # clear the old rays
-        self.__refraction_engine.refracted_rays.clear()
-        self.__refraction_engine.calculate_refractions()
+        scene_changed = self.__input_handler.update(pygame.mouse.get_pos())
+        if scene_changed:
+            self.__refraction_engine.refracted_rays.clear()
+            self.__refraction_engine.calculate_refractions()
+            self.__scene_changed = True
         
 
     def __render(self):
         self.__screen.fill(self.__BACKGROUND_COLOUR)
         self.__transparent_surface.fill((0, 0, 0, 0))  # Clear the transparent surface
-        self.__light_source_renderer.clear_rays()
         # need to render the glass shapes before the light rays so that the rays appear on top of the glass shapes
         self.__glass_shape_renderer.render(
             self.__scene.get_glass_shapes()
         )
         self.__light_source_renderer.render(
             self.__scene.get_light_sources(),
-            self.__refraction_engine.refracted_rays
+            self.__refraction_engine.refracted_rays,
+            scene_changed=self.__scene_changed
         )
+        self.__scene_changed = False  # Reset the scene changed flag after rendering
+
         
         self.__screen.blit(self.__transparent_surface, (0, 0))
         self.__screen.blit(pygame.transform.smoothscale(self.__transparent_ray_surface, self.__WINDOW_SIZE), (0, 0))

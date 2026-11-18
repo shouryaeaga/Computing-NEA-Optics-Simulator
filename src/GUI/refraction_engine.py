@@ -3,7 +3,7 @@ import numpy as np
 from core.ray import Ray
 from GUI.scene import Scene
 from objects.glass_shapes.Polygon import Polygon
-from core.optics_maths import snells_law
+from core.optics_maths import snells_law, fresnel_reflectance, reflection_vector
 from collections import deque
 
 MAX_DEPTH = 25
@@ -27,7 +27,7 @@ class RefractionEngine:
             if ray.get_depth() >= MAX_DEPTH:
                 continue
 
-            refracted_ray, point = self.__get_refracted_ray(ray)
+            refracted_ray, reflected_ray, point = self.__get_refracted_ray(ray)
             if refracted_ray is None:  # ray escaped the scene, leave it at its default length
                 ray.set_distance(1000)
                 continue
@@ -36,8 +36,9 @@ class RefractionEngine:
             start = np.array(ray.get_start_point(), dtype=float)
             ray.set_distance(np.linalg.norm(np.array(point) - start))
             queue.append(refracted_ray)
+            if reflected_ray is not None:
+                queue.append(reflected_ray)
 
-                
     def __get_refracted_ray(self, ray: Ray):
         # we need to find the closest intersection point
         point, glass_shape, edge = self.__find_closest_intersection(ray)
@@ -76,15 +77,41 @@ class RefractionEngine:
             # as refraction point will be on the edge and so it will intersect and think it is still in the glass shape
 
             next_start = np.array(point) + new_direction * 1e-6
+
+            reflected_ray = None
+            current_ray_intensity = ray.get_intensity()
+            transmitted_intensity = current_ray_intensity
+
+            # calculate the reflected ray from fresnel equations
+            # first need to find the angle of incidence
+            if square_root_term > 0:
+                angle_of_incidence = np.arccos(cos_theta_i)
+                reflected_intensity = fresnel_reflectance(n1, n2, angle_of_incidence)
+                # use the reflectance now
+                reflected_vector = reflection_vector(np.array(ray.get_direction(), dtype=float), normal_vector)
+                reflected_ray = Ray(
+                    np.array(point) + reflected_vector * 1e-6,
+                    reflected_vector,
+                    ray.get_wavelength(),
+                    reflected_intensity*current_ray_intensity,
+                    ray.get_depth() + 1,
+                    n1,  # reflected ray stays in the same medium
+                )
+                transmitted_intensity = current_ray_intensity - reflected_intensity*current_ray_intensity
+                
+
+
+
             refracted_ray = Ray(
                 next_start,
                 new_direction,
                 ray.get_wavelength(),
-                ray.get_intensity(),
+                transmitted_intensity,
                 ray.get_depth() + 1,
                 next_refractive_index,
             )
-            return refracted_ray, point
+            
+            return refracted_ray, reflected_ray, point
         return None, None  # no intersection point found, so the ray escapes the scene
 
     def __get_refractive_index_at_point(self, point):

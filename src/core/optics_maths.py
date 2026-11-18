@@ -36,9 +36,8 @@ def snells_law(n1, n2, incident_vector, normal_vector):
     # return the vector result
     return transmitted_vector
 
-def fresnel_reflectance(n1, n2, angle):
-    # convert the angle to radians
-    angle_rad = math.radians(angle)
+def fresnel_reflectance(n1, n2, angle_rad):
+    angle = math.degrees(angle_rad)
     # ensure that the refractive indices are positive
     if n1 <= 0 or n2 <= 0 or angle < 0 or angle > 90:
         raise ValueError("Refractive indices must be positive and angle must be between 0 and 90 degrees.")
